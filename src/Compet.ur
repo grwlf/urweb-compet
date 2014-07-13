@@ -1,8 +1,16 @@
 
+style invisible
+style visible
 
-con user = [UName = string, Bow = string , Birth = string]
+fun swap a b c = a c b
 
-table usersTab : ([Id = int] ++ user)
+con user_base = [UName = string, Bow = string , Birth = string]
+
+con user = ([Id = int] ++ user_base)
+
+val show_user : show (record user) = mkShow (fn s => (show s.Id) ^ " " ^ (show s.UName))
+
+table usersTab : (user)
   PRIMARY KEY  Id
 
 sequence usersSeq
@@ -18,7 +26,6 @@ table compet_users : ([CId = int, UId = int])
   PRIMARY KEY (CId, UId)
 
 sequence competUsersSeq
-
 
 val st = {
   Title = "Competitions",
@@ -46,15 +53,40 @@ and compet_details s cid =
         </xml>);
 
       ss <- source "";
+      ss2 <- source [];
+      bt1 <- source invisible;
+      bt2 <- source visible;
 
       return <xml>
         {[s]}
 
         <br/>
 
-        Details: {[fs.T.CName]}
+        <h2>{[fs.T.CName]}</h2>
 
-        <h2>Registered users</h2>
+        <button dynClass={signal bt2} onclick={fn _ => 
+          set bt1 visible; set bt2 invisible}>Edit</button>
+        <button dynClass={signal bt1} onclick={fn _ => 
+          set bt2 visible; set bt1 invisible}>Hide</button>
+        <div dynClass={signal bt1}>
+          <p>
+            <h3>Change name</h3>
+            <form>
+            <li>
+            <textbox{#Txt} value={show fs.T.CName}/>
+            </li>
+            <submit action={save} value="Update"/>
+            </form>
+          </p>
+          <p>
+            <h3>Delete (Warning!)</h3>
+            <form>
+            <submit action={delete} value="Do it"/>
+            </form>
+          </p>
+        </div>
+
+        <h3>Registered users</h3>
 
         <table border={1}>
           <tr>
@@ -67,31 +99,24 @@ and compet_details s cid =
 
         <div>
           <ctextbox source={ss}/>
-          <button value="Search" onclick={fn _ => v <- get ss;
-                                          id <- rpc (users_search v);
-                                          alert ( "Now inserting #" ^ (show id) )
-                                          }/>
-          
+          <button value="Search" onclick={fn _ =>
+            v <- get ss;
+            ls <- rpc (users_search v);
+            set ss2 ls
+          }/>
+          <dyn signal={
+            l <- signal ss2;
+            return (swap List.mapX l (fn x =>
+              <xml>
+                <form>
+                  {[x.UName]} ({[x.Birth]})
+                  <hidden{#UId} value={show x.Id}/>
+                  <submit action={compet_register cid} value="Register"/>
+                </form>
+              </xml>
+              ))
+           }/>
         </div>
-
-        <form>
-          <textbox{#UId}/>
-          <submit action={compet_register cid} value="Register"/>
-        </form>
-
-        <h2>Competition parameters</h2>
-
-        <form>
-          <li>
-            <textbox{#Txt} value={show fs.T.CName}/>
-          </li>
-          <submit action={save} value="Update"/>
-        </form>
-
-        <form>
-          Delete whole competition
-          <submit action={delete} value="Do it"/>
-        </form>
 
       </xml>
       )
@@ -194,9 +219,9 @@ and users_list (s:string) : transaction page =
       end
   end
 
-and users_search (s:string) : transaction int =
-  fs <- oneRow(SELECT * FROM usersTab AS U WHERE U.UName LIKE {["%" ^ s ^ "%"]});
-  return fs.U.Id
+and users_search (s:string) : transaction (list (record user)) =
+  fs <- queryL1(SELECT * FROM usersTab AS U WHERE U.UName LIKE {["%" ^ s ^ "%"]});
+  return fs
 
 and users {} : transaction page = users_list ""
 
