@@ -34,7 +34,7 @@ val st = {
   About = bless "/Compet/about"
   }
 
-fun compet_register cid frm =
+fun compet_register (cid:int) frm : transaction page =
   dml(INSERT INTO compet_users (CId, UId) VALUES ({[cid]},{[readError frm.UId]}));
   compet_details ("Registered " ^ (show frm.UId)) cid
 
@@ -101,7 +101,7 @@ and compet_details s cid =
           <ctextbox source={ss}/>
           <button value="Search" onclick={fn _ =>
             v <- get ss;
-            ls <- rpc (users_search v);
+            ls <- rpc (users_search cid v);
             set ss2 ls
           }/>
           <dyn signal={
@@ -219,9 +219,14 @@ and users_list (s:string) : transaction page =
       end
   end
 
-and users_search (s:string) : transaction (list (record user)) =
-  fs <- queryL1(SELECT * FROM usersTab AS U WHERE U.UName LIKE {["%" ^ s ^ "%"]});
-  return fs
+and users_search (cid:int) (s:string) : transaction (list (record user)) =
+  fs <- queryL(
+    SELECT * FROM usersTab AS U,
+      (SELECT U.Id AS I, COUNT(C.CId) AS N
+       FROM usersTab AS U LEFT JOIN compet_users AS C ON U.Id = C.UId AND C.CId = {[cid]}
+       WHERE U.UName LIKE {["%" ^ s ^ "%"]} GROUP BY U.Id) AS SS
+    WHERE U.Id = SS.I AND SS.N = 0);
+  return (List.mp (fn x => x.U) fs)
 
 and users {} : transaction page = users_list ""
 
