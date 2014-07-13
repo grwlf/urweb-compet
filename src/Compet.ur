@@ -3,16 +3,19 @@
 con user = [UName = string, Bow = string , Birth = string]
 
 table usersTab : ([Id = int] ++ user)
+  PRIMARY KEY  Id
 
 sequence usersSeq
 
 con compet = [Id = int, CName = string, Hide = bool]
 
 table compet : compet
+  PRIMARY KEY Id
 
 sequence competSeq
 
 table compet_users : ([CId = int, UId = int])
+  PRIMARY KEY (CId, UId)
 
 sequence competUsersSeq
 
