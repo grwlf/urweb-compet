@@ -29,19 +29,22 @@ fun bool name = {Nam = name,
                  Parse = fn x => x,
                  Inject = _}
 
-functor Make(M : sig
-                 con cols :: {(Type * Type)}
-                 constraint [Id] ~ cols
-                 val fl : folder cols
+functor Make(M :
+  sig
+    con cols :: {(Type * Type)}
+    constraint [Id] ~ cols
+    val fl : folder cols
 
-                 table tab : ([Id = int] ++ map fst cols)
+    table tab : ([Id = int] ++ map fst cols)
 
-                 sequence seq
+    sequence seq
 
-                 val st : Templ.static
+    val st : Templ.static
 
-                 val cols : colsMeta cols
-             end) = struct
+    val details : $(map fst cols) -> transaction xbody
+
+    val cols : colsMeta cols
+  end) = struct
 
     val tab = M.tab
 
@@ -128,19 +131,23 @@ functor Make(M : sig
             fso <- oneOrNoRows (SELECT tab.{{map fst M.cols}} FROM tab WHERE tab.Id = {[id]});
             case fso : (Basis.option {Tab : $(map fst M.cols)}) of
                 None => Templ.template M.st (return <xml>Not found!</xml>)
-              | Some fs => Templ.template M.st (return <xml><form>
-                {@foldR2 [fst] [colMeta] [fn cols => xml form [] (map snd cols)]
-                  (fn [nm :: Name] [t ::_] [rest ::_] [[nm] ~ rest] v (col : colMeta t)
-                                   (acc : xml form [] (map snd rest)) =>
-                      <xml>
-                        <li> {cdata col.Nam}: {col.WidgetPopulated [nm] v}</li>
-                        {useMore acc}
-                      </xml>)
-                  <xml/>
-                  M.fl fs.Tab M.cols}
+              | Some fs => Templ.template M.st (
+                  d <- M.details fs.Tab;
+                  return <xml><form>
+                    {@foldR2 [fst] [colMeta] [fn cols => xml form [] (map snd cols)]
+                      (fn [nm :: Name] [t ::_] [rest ::_] [[nm] ~ rest] v (col : colMeta t)
+                                       (acc : xml form [] (map snd rest)) =>
+                          <xml>
+                            <li> {cdata col.Nam}: {col.WidgetPopulated [nm] v}</li>
+                            {useMore acc}
+                          </xml>)
+                      <xml/>
+                      M.fl fs.Tab M.cols}
 
-                <submit action={save}/>
-              </form></xml>)
+                    <submit action={save}/>
+                  </form>
+                  {d}
+                </xml>)
         end
 
     and confirm (id : int) =

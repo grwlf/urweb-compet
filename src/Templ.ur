@@ -29,7 +29,8 @@ fun template (s:static) (mb:transaction xbody) : transaction page =
             <div class={cls (B.collapse :: B.navbar_collapse :: [])}>
               <ul class={cls (B.nav :: B.navbar_nav :: [])}>
                 <li class={B.active}><a href={s.Main}>Home</a></li>
-                <li><a href={s.Main}>About</a></li>
+                <li><a href={s.Users}>Users</a></li>
+                <li><a href={s.About}>About</a></li>
                 <li><a href={s.Main}>Contact</a></li>
               </ul>
             </div>

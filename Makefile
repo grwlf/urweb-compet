@@ -31,6 +31,9 @@ dropdb: ./Compet.db ./Makefile
 	echo 'allow mime image/png' >> .cake3/tmpCompet.in0
 	echo 'allow mime image/gif' >> .cake3/tmpCompet.in0
 	echo 'allow mime application/octet-stream' >> .cake3/tmpCompet.in0
+	echo 'allow url /Compet/main' >> .cake3/tmpCompet.in0
+	echo 'allow url /Compet/users' >> .cake3/tmpCompet.in0
+	echo 'allow url /Compet/about' >> .cake3/tmpCompet.in0
 	echo 'database dbname=Compet' >> .cake3/tmpCompet.in0
 	echo 'safeGet Compet/main' >> .cake3/tmpCompet.in0
 	echo 'sql ./Compet.sql' >> .cake3/tmpCompet.in0

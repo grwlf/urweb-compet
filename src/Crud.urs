@@ -5,6 +5,7 @@ con colMeta = fn (db :: Type, widget :: Type) =>
                   WidgetPopulated : nm :: Name -> db -> xml form [] [nm = widget],
                   Parse : widget -> db,
                   Inject : sql_injectable db}
+
 con colsMeta = fn cols :: {(Type * Type)} => $(map colMeta cols)
 
 val int : string -> colMeta (int, string)
@@ -23,6 +24,8 @@ functor Make(M :
     table tab : ([Id = int] ++ map fst cols)
 
     sequence seq
+
+    val details : $(map fst cols) -> transaction xbody
 
     val cols : colsMeta cols
   end) :

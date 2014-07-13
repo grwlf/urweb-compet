@@ -18,6 +18,9 @@ main = writeMake (file "Makefile") $ do
     allow mime "image/png";
     allow mime "image/gif";
     allow mime "application/octet-stream";
+    allow url "/Compet/main"
+    allow url "/Compet/users"
+    allow url "/Compet/about"
     database ("dbname="++(takeBaseName pn))
     safeGet "Compet.ur" "main"
     sql (pn.="sql")
