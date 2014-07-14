@@ -4,7 +4,7 @@ style visible
 
 fun swap a b c = a c b
 
-con user_base = [UName = string, Bow = string , Birth = string]
+con user_base = [UName = string, Bow = string , Birth = string, Club = string]
 
 con user = ([Id = int] ++ user_base)
 
@@ -22,7 +22,7 @@ table compet : compet
 
 sequence competSeq
 
-table compet_users : ([CId = int, UId = int])
+table compet_users : ([CId = int, UId = int] ++ user_base)
   PRIMARY KEY (CId, UId)
 
 sequence competUsersSeq
@@ -35,20 +35,66 @@ val st = {
   }
 
 fun compet_register (cid:int) frm : transaction page =
-  dml(INSERT INTO compet_users (CId, UId) VALUES ({[cid]},{[readError frm.UId]}));
-  compet_details ("Registered " ^ (show frm.UId)) cid
+  u <- oneRow1(SELECT * FROM usersTab AS U WHERE U.Id = {[readError frm.UId]});
+  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club)
+      VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}));
+  redirect ( url (compet_details "" cid))
+
+and registered_details (cid:int) (uid:int) : transaction page =
+  let
+    Templ.template st (
+      fs <- oneRow1(SELECT * FROM compet_users AS U WHERE U.UId = {[uid]} AND U.CId = {[cid]});
+      return <xml>
+        <h3>{[fs.UName]}</h3>
+        <p>
+          <h4>Update</h4>
+          <form>
+            <li> Name : <textbox{#UName} value={fs.UName}/> </li>
+            <li> Birth : <textbox{#Birth} value={fs.Birth}/> </li>
+            <li> Club : <textbox{#Club} value={fs.Club}/> </li>
+            <li> <checkbox{#Propagate} checked={False}/> </li>
+            <submit action={registered_update} value="Update"/>
+          </form>
+        </p>
+        <p>
+          <h4>Unregister</h4>
+          <form>
+            <submit action={registered_unregister} value="Unregister"/>
+          </form>
+        </p>
+      </xml>
+    )
+  where
+    fun registered_update frm =
+      dml(UPDATE compet_users
+          SET UName = {[frm.UName]}, Birth = {[frm.Birth]}, Club = {[frm.Club]}
+          WHERE CId = {[cid]} AND UId = {[uid]});
+      (case frm.Propagate of
+       |False => return {}
+       |True =>
+         dml(UPDATE usersTab
+           SET UName = {[frm.UName]}, Birth = {[frm.Birth]}, Club = {[frm.Club]}
+           WHERE Id = {[uid]}));
+      redirect( url(registered_details cid uid) )
+
+    fun registered_unregister _ =
+      dml(DELETE FROM compet_users WHERE CId = {[cid]} AND UId = {[uid]});
+      redirect(url (compet_details ("Unregistered " ^ (show uid)) cid))
+  end
 
 and compet_details s cid =
   let
     Templ.template st (
       fs <- oneRow(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
 
-      cu <- queryX (SELECT * FROM compet_users AS T, usersTab AS U WHERE T.UId = U.Id AND T.CId = {[cid]}) (fn fs =>
+      cu <- queryX (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (fn fs =>
         <xml>
           <tr>
-            <td>{[fs.U.UName]}</td>
-            <td>{[fs.U.Birth]}</td>
-            <td>{[fs.U.Bow]}</td>
+            <td>{[fs.CU.UName]}</td>
+            <td>{[fs.CU.Birth]}</td>
+            <td>{[fs.CU.Bow]}</td>
+            <td>{[fs.CU.Club]}</td>
+            <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
           </tr>
         </xml>);
 
@@ -93,6 +139,8 @@ and compet_details s cid =
             <th>Name</th>
             <th>Birth</th>
             <th>Bow</th>
+            <th>Club</th>
+            <th></th>
           </tr>
           {cu}
         </table>
@@ -125,11 +173,11 @@ and compet_details s cid =
 
     fun save new : transaction page =
       dml(UPDATE compet SET CName = {[new.Txt]} WHERE Id = {[cid]});
-      compet_details "Saved" cid
+      redirect ( url (compet_details "Saved" cid))
 
     fun delete _ : transaction page =
       dml(DELETE FROM compet WHERE Id = {[cid]});
-      compet_list "Deleted"
+      redirect (url (compet_list "Deleted"))
 
   end
 
@@ -164,7 +212,7 @@ and compet_list (s:string) : transaction page =
     fun new fs = 
       i <- nextval competSeq;
       dml(INSERT INTO compet(Id,CName,Hide) VALUES ({[i]}, {[fs.CName]}, {[False]}));
-      compet_list "Inserted"
+      redirect ( url (compet_list "Inserted"))
   end
 
 and users_list (s:string) : transaction page =
@@ -176,6 +224,7 @@ and users_list (s:string) : transaction page =
               <td>{[fs.T.UName]}</td>
               <td>{[fs.T.Birth]}</td>
               <td>{[fs.T.Bow]}</td>
+              <td>{[fs.T.Club]}</td>
               <td> <a link={users_detail fs.T.Id}>[Details]</a> </td>
             </tr>
           </xml>);
@@ -194,6 +243,7 @@ and users_list (s:string) : transaction page =
             <li> Name : <textbox{#UName}/> </li>
             <li> Birth : <textbox{#Birth}/> </li>
             <li> Bow : <textbox{#Bow}/> </li>
+            <li> Club : <textbox{#Club}/> </li>
             <submit action={users_new} value="Create"/>
           </form>
         </xml>
@@ -202,8 +252,9 @@ and users_list (s:string) : transaction page =
 
     fun users_new fs : transaction page = 
       i <- nextval usersSeq;
-      dml(INSERT INTO usersTab (Id,UName,Bow,Birth) VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}));
-      users_list "Inserted"
+      dml(INSERT INTO usersTab (Id,UName,Bow,Birth,Club)
+          VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Club]}));
+      redirect ( url (users_list "Inserted"))
 
     fun users_detail uid : transaction page = 
       let
@@ -215,15 +266,15 @@ and users_list (s:string) : transaction page =
       where
         fun users_delete _ : transaction page =
           dml(DELETE FROM usersTab WHERE Id = {[uid]});
-          users_list "Deleted"
+          redirect ( url (users_list "Deleted"))
       end
   end
 
 and users_search (cid:int) (s:string) : transaction (list (record user)) =
   fs <- queryL(
     SELECT * FROM usersTab AS U,
-      (SELECT U.Id AS I, COUNT(C.CId) AS N
-       FROM usersTab AS U LEFT JOIN compet_users AS C ON U.Id = C.UId AND C.CId = {[cid]}
+      (SELECT U.Id AS I, COUNT(CU.CId) AS N
+       FROM usersTab AS U LEFT JOIN compet_users AS CU ON U.Id = CU.UId AND CU.CId = {[cid]}
        WHERE U.UName LIKE {["%" ^ s ^ "%"]} GROUP BY U.Id) AS SS
     WHERE U.Id = SS.I AND SS.N = 0);
   return (List.mp (fn x => x.U) fs)
