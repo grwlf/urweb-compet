@@ -4,7 +4,7 @@ style visible
 
 fun swap a b c = a c b
 
-con user_base = [UName = string, Bow = string , Birth = string, Club = string]
+con user_base = [UName = string, Bow = string , Birth = string, Club = string, Rank = string]
 
 con user = ([Id = int] ++ user_base)
 
@@ -36,8 +36,8 @@ val st = {
 
 fun compet_register (cid:int) frm : transaction page =
   u <- oneRow1(SELECT * FROM usersTab AS U WHERE U.Id = {[readError frm.UId]});
-  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club)
-      VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}));
+  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank)
+      VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}));
   redirect ( url (compet_details "" cid))
 
 and registered_details (cid:int) (uid:int) : transaction page =
@@ -52,7 +52,8 @@ and registered_details (cid:int) (uid:int) : transaction page =
             <li> Name : <textbox{#UName} value={fs.UName}/> </li>
             <li> Birth : <textbox{#Birth} value={fs.Birth}/> </li>
             <li> Club : <textbox{#Club} value={fs.Club}/> </li>
-            <li> <checkbox{#Propagate} checked={False}/> </li>
+            <li> Rank : <textbox{#Rank} value={fs.Rank}/> </li>
+            <li> Also update users <checkbox{#Propagate} checked={False}/> </li>
             <submit action={registered_update} value="Update"/>
           </form>
         </p>
@@ -67,13 +68,15 @@ and registered_details (cid:int) (uid:int) : transaction page =
   where
     fun registered_update frm =
       dml(UPDATE compet_users
-          SET UName = {[frm.UName]}, Birth = {[frm.Birth]}, Club = {[frm.Club]}
+          SET UName = {[frm.UName]}, Birth = {[frm.Birth]},
+              Club = {[frm.Club]}, Rank = {[frm.Rank]}
           WHERE CId = {[cid]} AND UId = {[uid]});
       (case frm.Propagate of
        |False => return {}
        |True =>
          dml(UPDATE usersTab
-           SET UName = {[frm.UName]}, Birth = {[frm.Birth]}, Club = {[frm.Club]}
+           SET UName = {[frm.UName]}, Birth = {[frm.Birth]},
+               Club = {[frm.Club]}, Rank = {[frm.Rank]}
            WHERE Id = {[uid]}));
       redirect( url(registered_details cid uid) )
 
@@ -224,6 +227,7 @@ and users_list (s:string) : transaction page =
               <td>{[fs.T.UName]}</td>
               <td>{[fs.T.Birth]}</td>
               <td>{[fs.T.Bow]}</td>
+              <td>{[fs.T.Rank]}</td>
               <td>{[fs.T.Club]}</td>
               <td> <a link={users_detail fs.T.Id}>[Details]</a> </td>
             </tr>
@@ -243,6 +247,7 @@ and users_list (s:string) : transaction page =
             <li> Name : <textbox{#UName}/> </li>
             <li> Birth : <textbox{#Birth}/> </li>
             <li> Bow : <textbox{#Bow}/> </li>
+            <li> Runk : <textbox{#Rank}/> </li>
             <li> Club : <textbox{#Club}/> </li>
             <submit action={users_new} value="Create"/>
           </form>
@@ -252,8 +257,8 @@ and users_list (s:string) : transaction page =
 
     fun users_new fs : transaction page = 
       i <- nextval usersSeq;
-      dml(INSERT INTO usersTab (Id,UName,Bow,Birth,Club)
-          VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Club]}));
+      dml(INSERT INTO usersTab (Id,UName,Bow,Birth,Rank,Club)
+          VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
       redirect ( url (users_list "Inserted"))
 
     fun users_detail uid : transaction page = 
