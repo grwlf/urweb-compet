@@ -2,7 +2,53 @@
 style invisible
 style visible
 
+val cl = CSS.list
+
+structure B = Bootstrap
+
 fun swap a b c = a c b
+
+(* Utils *)
+
+fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {Type}]
+           [tables ~ exps] [other ~ [Table,Body]] (q : sql_query [] [] tables exps)
+           (hdr : xml (other ++ [Table]) inp [])
+           (f : $(exps ++ map (fn fields :: {Type} => $fields) tables) -> xml (other ++ [Table]) inp [])
+              : transaction (xml (other ++ [Body]) inp []) =
+  r <- queryX q f;
+  return <xml>
+    <table class={cl (B.bs3_table :: B.table_striped :: [])}>
+      {hdr}
+      {r}
+    </table>
+  </xml>
+
+fun formgroup2 [other ::: {Unit}] [inp ::: {Type}] [frm ::: {Type}] [other ~ [Body]] [inp ~ frm]
+  (n:string) (x:xml (other ++ [Body]) inp frm) :
+  xml (other ++ [Body]) inp frm =
+  <xml>
+    <div class={B.form_group}>
+      <label class={B.col_xs_2}>{[n]}</label>
+      <div class={B.col_xs_10}>
+        {x}
+      </div>
+    </div>
+  </xml>
+
+fun formgroup [nm :: Name] [other ::: {Unit}] [inp ::: {Type}] 
+                [other ~ [Body,Form]] [inp ~ [nm=string]]
+                (n:string) :
+                    xml (other ++ [Body,Form]) inp ([nm=string]) =
+  <xml>
+    <div class={B.form_group}>
+      <label class={B.col_xs_2}>{[n]}</label>
+      <div class={B.col_xs_10}>
+        <textbox{nm} class={B.form_control}/>
+      </div>
+    </div>
+  </xml>
+
+(* Data defineitions *)
 
 con user_base = [UName = string, Bow = string , Birth = string, Club = string, Rank = string]
 
@@ -187,29 +233,38 @@ and compet_details s cid =
 and compet_list (s:string) : transaction page = 
   let
     Templ.template st (
-      rows <- queryX (SELECT * FROM compet AS T) (fn fs => <xml>
-          <tr>
-            <td>{[fs.T.Id]}</td>
-            <td>{[fs.T.CName]}</td>
-            <td> <a link={compet_details "" fs.T.Id}>[Details]</a> </td>
-          </tr>
-        </xml>);
-      return <xml>
-        {[s]}
-        <table border={1}>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-          </tr>
-          {rows}
-        </table>
 
-        <form>
-          <li>
-            Name : <textbox{#CName}/>
-          </li>
-          <submit action={new} value="Create"/>
-        </form>
+      t <- mktab (SELECT * FROM compet AS T) (
+          <xml>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+            </tr>
+          </xml>) (fn fs => <xml>
+            <tr>
+              <td>{[fs.T.Id]}</td>
+              <td>{[fs.T.CName]}</td>
+              <td> <a link={compet_details "" fs.T.Id}>[Details]</a> </td>
+            </tr>
+          </xml>);
+
+      return <xml>
+
+        {[s]}
+
+        <div class={B.container}>
+
+          {t}
+
+          <form>
+            <li>
+              Name : <textbox{#CName}/>
+            </li>
+            <submit action={new} value="Create"/>
+          </form>
+
+        </div>
+
       </xml>)
   where
     fun new fs = 
@@ -221,7 +276,17 @@ and compet_list (s:string) : transaction page =
 and users_list (s:string) : transaction page =
   let
     Templ.template st (
-        rows <- queryX (SELECT * FROM usersTab AS T) (fn fs => <xml>
+
+      t <- mktab (SELECT * FROM usersTab AS T) (
+              <xml><tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Birth</th>
+                <th>Bow</th>
+                <th>Rank</th>
+                <th>Club</th>
+                <th></th>
+              </tr></xml>) (fn fs => <xml>
             <tr>
               <td>{[fs.T.Id]}</td>
               <td>{[fs.T.UName]}</td>
@@ -233,26 +298,37 @@ and users_list (s:string) : transaction page =
             </tr>
           </xml>);
 
-        return <xml>
-          {[s]}
-          <table border={1}>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-            </tr>
-            {rows}
-          </table>
+      return <xml>
 
-          <form>
-            <li> Name : <textbox{#UName}/> </li>
-            <li> Birth : <textbox{#Birth}/> </li>
-            <li> Bow : <textbox{#Bow}/> </li>
-            <li> Runk : <textbox{#Rank}/> </li>
-            <li> Club : <textbox{#Club}/> </li>
-            <submit action={users_new} value="Create"/>
-          </form>
-        </xml>
+        <div class={B.container}>
+
+          <p class={B.bg_success}>{[s]}</p>
+
+          <div class={B.row}>
+          <div class={B.col_xs_12}>
+            {t}
+          </div>
+          </div>
+
+          <div class={B.row}>
+          <div class={B.col_xs_12}>
+            <form role="form" class={B.form_horizontal}>
+
+              {formgroup [#UName] "UName"}
+              {formgroup [#Birth] "Birth"}
+              {formgroup [#Bow] "Bow"}
+              {formgroup [#Rank] "Rank"}
+              {formgroup [#Club] "Club"}
+              <submit class={cl (B.btn :: B.btn_default :: [])} action={users_new} value="Create"/>
+            </form>
+          </div>
+          </div>
+
+        </div>
+
+      </xml>
     )
+
   where
 
     fun users_new fs : transaction page = 

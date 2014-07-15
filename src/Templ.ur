@@ -37,10 +37,7 @@ fun template (s:static) (mb:transaction xbody) : transaction page =
           </div>
         </div>
 
-        <div class={B.container}>
-          <h1>{[s.Title]}</h1>
-          {b}
-        </div>
+        {b}
 
       </xml>
     )))))
