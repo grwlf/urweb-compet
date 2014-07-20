@@ -108,7 +108,11 @@ table compet : compet
 
 sequence competSeq
 
-table compet_users : ([CId = int, UId = int] ++ user_base)
+table scores : ([SId = int, Score = int])
+
+sequence scoresSeq
+
+table compet_users : ([CId = int, UId = int] ++ user_base ++ [SId1 = int, SId2 = int])
   PRIMARY KEY (CId, UId)
 
 sequence competUsersSeq
@@ -120,13 +124,7 @@ val st = {
   About = bless "/Compet/about"
   }
 
-fun compet_register (cid:int) frm : transaction page =
-  u <- oneRow1(SELECT * FROM usersTab AS U WHERE U.Id = {[readError frm.UId]});
-  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank)
-      VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}));
-  redirect ( url (compet_details "" cid))
-
-and registered_details (cid:int) (uid:int) : transaction page =
+fun registered_details (cid:int) (uid:int) : transaction page =
   let
     Templ.template st (
       fs <- oneRow1(SELECT * FROM compet_users AS U WHERE U.UId = {[uid]} AND U.CId = {[cid]});
@@ -172,6 +170,41 @@ and registered_details (cid:int) (uid:int) : transaction page =
       redirect(url (compet_details ("Unregistered " ^ (show uid)) cid))
   end
 
+and compet_details2 cid =
+  let
+    Templ.template st (
+      fs <- oneRow1(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
+      t <- mktab (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (
+        <xml>
+          <tr>
+            <th>Name</th>
+            <th>Birth</th>
+            <th>Bow</th>
+            <th>Club</th>
+            <th></th>
+          </tr>
+        </xml>
+        ) (fn fs =>
+        <xml>
+          <tr>
+            <td>{[fs.CU.UName]}</td>
+            <td>{[fs.CU.Birth]}</td>
+            <td>{[fs.CU.Bow]}</td>
+            <td>{[fs.CU.Club]}</td>
+            <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
+          </tr>
+        </xml>);
+      return <xml>
+        <h2>{[fs.CName]}</h2>
+
+        <h3>Scores</h3>
+
+        {mkrow t}
+
+      </xml>)
+  where
+  end
+
 and compet_details s cid =
   let
     Templ.template st (
@@ -206,13 +239,13 @@ and compet_details s cid =
             <h3>Change name</h3>
             {mkform <xml>
               {formgroup_def [#CName] fs "Name"}
-              <submit action={save} value="Update"/>
+              <submit action={compet_save} value="Update"/>
               </xml>}
           </p>
           <p>
             <h3>Delete (Warning!)</h3>
             <form>
-            <submit action={delete} value="Do it"/>
+            <submit action={compet_delete} value="Do it"/>
             </form>
           </p>
         </xml>;
@@ -244,7 +277,7 @@ and compet_details s cid =
                 {mkform <xml>
                   {[x.UName]} ({[x.Birth]})
                   <hidden{#UId} value={show x.Id}/>
-                  <submit action={compet_register cid} value="Register"/>
+                  <submit action={compet_register} value="Register"/>
                 </xml>}
               </xml>
               ))
@@ -256,11 +289,21 @@ and compet_details s cid =
 
   where
 
-    fun save new : transaction page =
+    fun compet_register frm : transaction page =
+      sid1 <- nextval scoresSeq;
+      dml(INSERT INTO scores (SId, Score) VALUES ({[sid1]}, 0));
+      sid2 <- nextval scoresSeq;
+      dml(INSERT INTO scores (SId, Score) VALUES ({[sid2]}, 0));
+      u <- oneRow1(SELECT * FROM usersTab AS U WHERE U.Id = {[readError frm.UId]});
+      dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank, SId1, SId2)
+          VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, {[sid1]},{[sid2]}));
+      redirect ( url (compet_details "" cid))
+
+    fun compet_save new : transaction page =
       dml(UPDATE compet SET CName = {[new.CName]} WHERE Id = {[cid]});
       redirect ( url (compet_details "Saved" cid))
 
-    fun delete _ : transaction page =
+    fun compet_delete _ : transaction page =
       dml(DELETE FROM compet WHERE Id = {[cid]});
       redirect (url (compet_list "Deleted"))
 
@@ -275,12 +318,15 @@ and compet_list (s:string) : transaction page =
             <tr>
               <th>ID</th>
               <th>Name</th>
+              <th></th>
+              <th></th>
             </tr>
           </xml>) (fn fs => <xml>
             <tr>
               <td>{[fs.T.Id]}</td>
               <td>{[fs.T.CName]}</td>
               <td> <a link={compet_details "" fs.T.Id}>[Details]</a> </td>
+              <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
             </tr>
           </xml>);
 
