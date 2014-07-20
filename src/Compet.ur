@@ -23,31 +23,6 @@ fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {T
     </table>
   </xml>
 
-val tabfeed
- : (((xml ([Tr = (), Dyn = (), MakeForm = ()]) ([]) ([])) -> xml ([Table = (), Dyn = (), MakeForm = ()]) ([]) ([])) ->
-        transaction (xml ([Table = (), Dyn = (), MakeForm = ()]) ([]) ([]))) ->
-              transaction (xml ([Body = (), Dyn = (), MakeForm = ()]) ([]) ([]))
-                    =
-fn f  =>
-  r <- f (fn x => <xml><tr>{x}</tr></xml>);
-  return <xml>
-    <table>
-      {r}
-    </table>
-  </xml>
-
-fun formgroup2 [other ::: {Unit}] [inp ::: {Type}] [frm ::: {Type}] [other ~ [Body]] [inp ~ frm]
-  (n:string) (x:xml (other ++ [Body]) inp frm) :
-  xml (other ++ [Body]) inp frm =
-  <xml>
-    <div class={B.form_group}>
-      <label class={B.col_xs_2}>{[n]}</label>
-      <div class={B.col_xs_10}>
-        {x}
-      </div>
-    </div>
-  </xml>
-
 fun formgroup [nm :: Name] [other ::: {Unit}] [inp ::: {Type}] 
                 [other ~ [Body,Form]] [inp ~ [nm=string]]
                 (n:string) :
@@ -61,6 +36,32 @@ fun formgroup [nm :: Name] [other ::: {Unit}] [inp ::: {Type}]
     </div>
   </xml>
 
+fun formgroup_def [nm :: Name] [flds:::{Type}] [other ::: {Unit}] [inp ::: {Type}] 
+                [other ~ [Body,Form]] [inp ~ [nm=string]] [flds ~ [nm=string]]
+                (v:$([nm=string] ++ flds)) (n:string) :
+                    xml (other ++ [Body,Form]) inp ([nm=string]) =
+  <xml>
+    <div class={B.form_group}>
+      <label class={B.col_xs_2}>{[n]}</label>
+      <div class={B.col_xs_10}>
+        <textbox{nm} class={B.form_control} value={v.nm}/>
+      </div>
+    </div>
+  </xml>
+
+fun formgroup2 [other ::: {Unit}] [inp ::: {Type}] [frm ::: {Type}] [other ~ [Body]] [inp ~ frm]
+  (x:xml (other ++ [Body]) inp frm) (n:string) :
+  xml (other ++ [Body]) inp frm =
+  <xml>
+    <div class={B.form_group}>
+      <label class={B.col_xs_2}>{[n]}</label>
+      <div class={B.col_xs_10}>
+        {x}
+      </div>
+    </div>
+  </xml>
+
+
 fun mkform [t:::{Type}] (x:xml form [] t) : xbody =
   <xml>
       <form role="form" class={B.form_horizontal}>
@@ -71,6 +72,21 @@ fun mkform [t:::{Type}] (x:xml form [] t) : xbody =
 fun mkrow x = <xml><div class={B.row}><div class={B.col_xs_12}>{x}</div></div> </xml>
 
 (* fun mkcont x = <xml><div class={B.container}>{x}</div></xml> *)
+
+
+fun hidingpanel (x:xbody) : transaction xbody =
+  bt1 <- source invisible;
+  bt2 <- source visible;
+  return <xml>
+        <button dynClass={signal bt2} onclick={fn _ => 
+          set bt1 visible; set bt2 invisible}>Edit</button>
+        <button dynClass={signal bt1} onclick={fn _ => 
+          set bt2 visible; set bt1 invisible}>Hide</button>
+        <div dynClass={signal bt1}>
+          {x}
+        </div>
+  </xml>
+
 
 (* Data defineitions *)
 
@@ -118,20 +134,21 @@ and registered_details (cid:int) (uid:int) : transaction page =
         <h3>{[fs.UName]}</h3>
         <p>
           <h4>Update</h4>
-          <form>
-            <li> Name : <textbox{#UName} value={fs.UName}/> </li>
-            <li> Birth : <textbox{#Birth} value={fs.Birth}/> </li>
-            <li> Club : <textbox{#Club} value={fs.Club}/> </li>
-            <li> Rank : <textbox{#Rank} value={fs.Rank}/> </li>
-            <li> Also update users <checkbox{#Propagate} checked={False}/> </li>
+          {mkform <xml>
+            {formgroup_def [#UName] fs "Name"}
+            {formgroup_def [#Birth] fs "Birth"}
+            {formgroup_def [#Club] fs "Club"}
+            {formgroup_def [#Rank] fs "Rank"}
+            {formgroup2 <xml><checkbox{#Propagate} checked={False}/></xml> "Also update users"}
             <submit action={registered_update} value="Update"/>
-          </form>
+          </xml>}
         </p>
+
         <p>
           <h4>Unregister</h4>
-          <form>
+          {mkform <xml>
             <submit action={registered_unregister} value="Unregister"/>
-          </form>
+          </xml>}
         </p>
       </xml>
     )
@@ -158,7 +175,7 @@ and registered_details (cid:int) (uid:int) : transaction page =
 and compet_details s cid =
   let
     Templ.template st (
-      fs <- oneRow(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
+      fs <- oneRow1(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
 
       t <- mktab (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (
         <xml>
@@ -183,29 +200,14 @@ and compet_details s cid =
 
       ss <- source "";
       ss2 <- source [];
-      bt1 <- source invisible;
-      bt2 <- source visible;
 
-      return <xml>
-        {[s]}
-
-        <br/>
-
-        <h2>{[fs.T.CName]}</h2>
-
-        <button dynClass={signal bt2} onclick={fn _ => 
-          set bt1 visible; set bt2 invisible}>Edit</button>
-        <button dynClass={signal bt1} onclick={fn _ => 
-          set bt2 visible; set bt1 invisible}>Hide</button>
-        <div dynClass={signal bt1}>
+      hp <- hidingpanel <xml>
           <p>
             <h3>Change name</h3>
-            <form>
-            <li>
-            <textbox{#Txt} value={show fs.T.CName}/>
-            </li>
-            <submit action={save} value="Update"/>
-            </form>
+            {mkform <xml>
+              {formgroup_def [#CName] fs "Name"}
+              <submit action={save} value="Update"/>
+              </xml>}
           </p>
           <p>
             <h3>Delete (Warning!)</h3>
@@ -213,7 +215,16 @@ and compet_details s cid =
             <submit action={delete} value="Do it"/>
             </form>
           </p>
-        </div>
+        </xml>;
+
+      return <xml>
+        {[s]}
+
+        <br/>
+
+        <h2>{[fs.CName]}</h2>
+
+        {hp}
 
         <h3>Registered users</h3>
 
@@ -246,7 +257,7 @@ and compet_details s cid =
   where
 
     fun save new : transaction page =
-      dml(UPDATE compet SET CName = {[new.Txt]} WHERE Id = {[cid]});
+      dml(UPDATE compet SET CName = {[new.CName]} WHERE Id = {[cid]});
       redirect ( url (compet_details "Saved" cid))
 
     fun delete _ : transaction page =
