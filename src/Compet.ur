@@ -23,6 +23,19 @@ fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {T
     </table>
   </xml>
 
+val tabfeed
+ : (((xml ([Tr = (), Dyn = (), MakeForm = ()]) ([]) ([])) -> xml ([Table = (), Dyn = (), MakeForm = ()]) ([]) ([])) ->
+        transaction (xml ([Table = (), Dyn = (), MakeForm = ()]) ([]) ([]))) ->
+              transaction (xml ([Body = (), Dyn = (), MakeForm = ()]) ([]) ([]))
+                    =
+fn f  =>
+  r <- f (fn x => <xml><tr>{x}</tr></xml>);
+  return <xml>
+    <table>
+      {r}
+    </table>
+  </xml>
+
 fun formgroup2 [other ::: {Unit}] [inp ::: {Type}] [frm ::: {Type}] [other ~ [Body]] [inp ~ frm]
   (n:string) (x:xml (other ++ [Body]) inp frm) :
   xml (other ++ [Body]) inp frm =
@@ -47,6 +60,17 @@ fun formgroup [nm :: Name] [other ::: {Unit}] [inp ::: {Type}]
       </div>
     </div>
   </xml>
+
+fun mkform [t:::{Type}] (x:xml form [] t) : xbody =
+  <xml>
+      <form role="form" class={B.form_horizontal}>
+      {x}
+      </form>
+  </xml>
+
+fun mkrow x = <xml><div class={B.row}><div class={B.col_xs_12}>{x}</div></div> </xml>
+
+(* fun mkcont x = <xml><div class={B.container}>{x}</div></xml> *)
 
 (* Data defineitions *)
 
@@ -136,7 +160,17 @@ and compet_details s cid =
     Templ.template st (
       fs <- oneRow(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
 
-      cu <- queryX (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (fn fs =>
+      t <- mktab (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (
+        <xml>
+          <tr>
+            <th>Name</th>
+            <th>Birth</th>
+            <th>Bow</th>
+            <th>Club</th>
+            <th></th>
+          </tr>
+        </xml>
+        ) (fn fs =>
         <xml>
           <tr>
             <td>{[fs.CU.UName]}</td>
@@ -183,16 +217,7 @@ and compet_details s cid =
 
         <h3>Registered users</h3>
 
-        <table border={1}>
-          <tr>
-            <th>Name</th>
-            <th>Birth</th>
-            <th>Bow</th>
-            <th>Club</th>
-            <th></th>
-          </tr>
-          {cu}
-        </table>
+        {mkrow t}
 
         <div>
           <ctextbox source={ss}/>
@@ -205,11 +230,11 @@ and compet_details s cid =
             l <- signal ss2;
             return (swap List.mapX l (fn x =>
               <xml>
-                <form>
+                {mkform <xml>
                   {[x.UName]} ({[x.Birth]})
                   <hidden{#UId} value={show x.Id}/>
                   <submit action={compet_register cid} value="Register"/>
-                </form>
+                </xml>}
               </xml>
               ))
            }/>
@@ -250,20 +275,14 @@ and compet_list (s:string) : transaction page =
 
       return <xml>
 
-        {[s]}
+        <p class={B.bg_success}>{[s]}</p>
 
-        <div class={B.container}>
+        {mkrow t}
 
-          {t}
-
-          <form>
-            <li>
-              Name : <textbox{#CName}/>
-            </li>
-            <submit action={new} value="Create"/>
-          </form>
-
-        </div>
+        {mkrow (mkform <xml>
+          {formgroup [#CName] "Name"}
+          <submit action={new} value="Create"/>
+        </xml>)}
 
       </xml>)
   where
@@ -300,34 +319,20 @@ and users_list (s:string) : transaction page =
 
       return <xml>
 
-        <div class={B.container}>
-
           <p class={B.bg_success}>{[s]}</p>
 
-          <div class={B.row}>
-          <div class={B.col_xs_12}>
-            {t}
-          </div>
-          </div>
+          {mkrow t}
 
-          <div class={B.row}>
-          <div class={B.col_xs_12}>
-            <form role="form" class={B.form_horizontal}>
+          {mkrow (mkform <xml>
+            {formgroup [#UName] "UName"}
+            {formgroup [#Birth] "Birth"}
+            {formgroup [#Bow] "Bow"}
+            {formgroup [#Rank] "Rank"}
+            {formgroup [#Club] "Club"}
+            <submit action={users_new} value="Create"/>
+          </xml>)}
 
-              {formgroup [#UName] "UName"}
-              {formgroup [#Birth] "Birth"}
-              {formgroup [#Bow] "Bow"}
-              {formgroup [#Rank] "Rank"}
-              {formgroup [#Club] "Club"}
-              <submit class={cl (B.btn :: B.btn_default :: [])} action={users_new} value="Create"/>
-            </form>
-          </div>
-          </div>
-
-        </div>
-
-      </xml>
-    )
+        </xml>)
 
   where
 
@@ -340,9 +345,9 @@ and users_list (s:string) : transaction page =
     fun users_detail uid : transaction page = 
       let
         Templ.template st (return <xml>
-        <form>
-          <submit action={users_delete} value="Delete"/>
-        </form>
+          {mkform <xml>
+            <submit action={users_delete} value="Delete user"/>
+          </xml>}
         </xml>)
       where
         fun users_delete _ : transaction page =

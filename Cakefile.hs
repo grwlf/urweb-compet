@@ -45,6 +45,12 @@ main = writeMake (file "Makefile") $ do
     depend db
 
   rule $ do
+    phony "tc"
+    shell [cmd|urweb -tc -dumpTypes $(string "Compet")|]
+
+
+  rule $ do
     phony "all"
     depend a
+
 

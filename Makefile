@@ -13,6 +13,9 @@ URINCL = -I$(shell urweb -print-cinclude)
 URVERSION = $(shell urweb -version)
 .PHONY: all
 all: ./Compet.exe ./Compet.sql ./Makefile
+.PHONY: tc
+tc: ./Makefile
+	urweb -tc -dumpTypes Compet
 .PHONY: dropdb
 dropdb: ./Compet.db ./Makefile
 ./Compet.db: ./Compet.exe ./Compet.sql ./Makefile
@@ -79,6 +82,8 @@ ifneq ($(MAKECMDGOALS),clean)
 
 .PHONY: all
 all: .fix-multy1
+.PHONY: tc
+tc: .fix-multy1
 .PHONY: dropdb
 dropdb: .fix-multy1
 .PHONY: ./Compet.db
