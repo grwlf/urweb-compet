@@ -108,14 +108,16 @@ table compet : compet
 
 sequence competSeq
 
-table scores : ([SId = int, Score = int])
 
-sequence scoresSeq
+table compet_users : ([CId = int, UId = int] ++ user_base)
+  PRIMARY KEY (CId, UId),
+  CONSTRAINT CU_U FOREIGN KEY (UId) REFERENCES usersTab (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT CU_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
-table compet_users : ([CId = int, UId = int] ++ user_base ++ [SId1 = int, SId2 = int])
-  PRIMARY KEY (CId, UId)
-
-sequence competUsersSeq
+table scores : ([CId = int, UId = int, Round = int, Score = int])
+  PRIMARY KEY (CId, UId, Round),
+  CONSTRAINT S_U FOREIGN KEY (UId) REFERENCES usersTab (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT S_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
 val st = {
   Title = "Competitions",
@@ -167,6 +169,7 @@ fun registered_details (cid:int) (uid:int) : transaction page =
 
     fun registered_unregister _ =
       dml(DELETE FROM compet_users WHERE CId = {[cid]} AND UId = {[uid]});
+      dml(DELETE FROM scores WHERE CId = {[cid]} AND UId = {[uid]});
       redirect(url (compet_details ("Unregistered " ^ (show uid)) cid))
   end
 
@@ -290,13 +293,11 @@ and compet_details s cid =
   where
 
     fun compet_register frm : transaction page =
-      sid1 <- nextval scoresSeq;
-      dml(INSERT INTO scores (SId, Score) VALUES ({[sid1]}, 0));
-      sid2 <- nextval scoresSeq;
-      dml(INSERT INTO scores (SId, Score) VALUES ({[sid2]}, 0));
       u <- oneRow1(SELECT * FROM usersTab AS U WHERE U.Id = {[readError frm.UId]});
-      dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank, SId1, SId2)
-          VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, {[sid1]},{[sid2]}));
+      dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank)
+          VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}));
+      dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
+      dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
       redirect ( url (compet_details "" cid))
 
     fun compet_save new : transaction page =
