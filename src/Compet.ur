@@ -296,8 +296,12 @@ and compet_details cid =
             l <- signal ss2;
             return (swap List.mapX l (fn x =>
               <xml>
+                <br/>
+                <button value="Register" onclick={fn _ =>
+                  rpc (compet_register cid x.Id);
+                  redirect (url (compet_details cid))
+                }/>
                 {[x.UName]} ({[x.Birth]})
-                <button value="Register" onclick={fn _ => rpc (compet_register cid x.Id)}/>
               </xml>
               ))
            }/>
