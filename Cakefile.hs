@@ -18,11 +18,10 @@ main = writeMake (file "Makefile") $ do
     allow mime "image/png";
     allow mime "image/gif";
     allow mime "application/octet-stream";
-    allow url "/Compet/main"
-    allow url "/Compet/users"
-    allow url "/Compet/about"
+    allow url "/Compet/*"
     database ("dbname="++(takeBaseName pn))
     safeGet "Compet.ur" "main"
+    safeGet "Compet.ur" "init"
     sql (pn.="sql")
     library' (externalMake "lib/uru3/Bootstrap/lib.urp")
     ur (sys "list")
