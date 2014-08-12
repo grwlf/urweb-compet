@@ -24,7 +24,7 @@ fun template (s:static) (mb:transaction xbody) : transaction page =
           <div class={cls (B.navbar :: B.navbar_inverse :: B.navbar_fixed_top :: [])} role="navigation">
             <div class={B.container}>
               <div class={B.navbar_header}>
-                <a class={B.navbar_brand} href={s.Main}>Project name</a>
+                <a class={B.navbar_brand} href={s.Main}>ArcCo</a>
               </div>
               <div class={cls (B.collapse :: B.navbar_collapse :: [])}>
                 <ul class={cls (B.nav :: B.navbar_nav :: [])}>
