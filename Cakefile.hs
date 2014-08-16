@@ -24,11 +24,12 @@ main = writeMake (file "Makefile") $ do
     safeGet "Compet.ur" "init"
     sql (pn.="sql")
     library' (externalMake "lib/uru3/Bootstrap/lib.urp")
+    library' (externalMake "lib/urweb-monad-pack/lib.urp")
     ur (sys "list")
     ur (sys "string")
+    ur (single "src/XmlGen.ur")
     bin ("src/Compet.css") [NoScan]
     ur (pair "src/Templ.ur")
-    ur (pair "src/Crud.ur")
     ur (pair "src/Compet.ur")
 
   db <- rule $ do
