@@ -5,6 +5,7 @@ style visible
 val cl = CSS.list
 
 structure B = Bootstrap
+structure X = XmlGen
 
 fun swap a b c = a c b
 
@@ -22,6 +23,16 @@ fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {T
       {r}
     </table>
   </xml>
+
+fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
+  X.nest (fn x =>
+    <xml>
+      <table class={cl (B.bs3_table :: B.table_striped :: [])}>
+        {x}
+      </table>
+    </xml>) nb
+
+fun push [ctx] x = @@X.push [ctx] x
 
 fun formgroup [nm :: Name] [other ::: {Unit}] [inp ::: {Type}] 
                 [other ~ [Body,Form]] [inp ~ [nm=string]]
@@ -192,49 +203,55 @@ and registered_details (cid:int) (uid:int) : transaction page =
 and compet_details2 cid =
   let
     Templ.template (st {}) (
-      fs <- oneRow1(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
-      t <- mktab (SELECT *
-                  FROM compet_users AS CU,
-                       scores AS S0,
-                       scores AS S1
-                  WHERE
-                        CU.CId = {[cid]}
-                    AND S0.CId = {[cid]}
-                    AND S0.Round = 0     
-                    AND S0.UId = CU.UId
-                    AND S1.CId = {[cid]}
-                    AND S1.Round = 1
-                    AND S1.UId = CU.UId)
-        (<xml>
-          <tr>
-            <th>Name</th>
-            <th>Birth</th>
-            <th>Bow</th>
-            <th>Club</th>
-            <th>Round 0 score</th>
-            <th>Round 1 score</th>
-          </tr>
-        </xml>)
-        
-        (fn fs =>
-        <xml>
-          <tr>
-            <td>{[fs.CU.UName]}</td>
-            <td>{[fs.CU.Birth]}</td>
-            <td>{[fs.CU.Bow]}</td>
-            <td>{[fs.CU.Club]}</td>
-            <td>{[fs.S0.Score]}</td>
-            <td>{[fs.S1.Score]}</td>
-            <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
-          </tr>
-        </xml>);
+      X.run (
+        fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
+        push <xml><h2>{[fs.CName]}</h2></xml>;
+        push <xml><h3>Scores</h3></xml>;
 
-      return
-      <xml>
-        <h2>{[fs.CName]}</h2>
-        <h3>Scores</h3>
-        {mkrow t}
-      </xml>)
+        tnest (
+          push
+            <xml><tr>
+              <th></th>
+              <th>Name</th>
+              <th>Birth</th>
+              <th>Bow</th>
+              <th>Club</th>
+              <th>Round 1</th>
+              <th>Round 2</th>
+              <th></th>
+            </tr></xml>;
+
+          X.query_ (
+            SELECT *
+            FROM compet_users AS CU,
+                 scores AS S0,
+                 scores AS S1
+            WHERE
+                  CU.CId = {[cid]}
+              AND S0.CId = {[cid]}
+              AND S0.Round = 0     
+              AND S0.UId = CU.UId
+              AND S1.CId = {[cid]}
+              AND S1.Round = 1
+              AND S1.UId = CU.UId
+          )
+            
+          (fn fs =>
+            s <- X.source False;
+            push
+              <xml><tr>
+                <td><ccheckbox source={s}/></td>
+                <td>{[fs.CU.UName]}</td>
+                <td>{[fs.CU.Birth]}</td>
+                <td>{[fs.CU.Bow]}</td>
+                <td>{[fs.CU.Club]}</td>
+                <td>{[fs.S0.Score]}</td>
+                <td>{[fs.S1.Score]}</td>
+                <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
+              </tr></xml>)
+        )
+      )
+    )
   where
   end
 
