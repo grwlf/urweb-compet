@@ -1,15 +1,23 @@
+structure B = Bootstrap
+structure X = XmlGen
+structure P = Prelude
+structure CSS = CSS
+
+val swap = @@P.swap
+val ap = @@P.ap
+val cl = @@CSS.list
 
 style invisible
 style visible
 
-val cl = CSS.list
+(*
+ _   _ _   _ _     
+| | | | |_(_) |___ 
+| | | | __| | / __|
+| |_| | |_| | \__ \
+ \___/ \__|_|_|___/
 
-structure B = Bootstrap
-structure X = XmlGen
-
-fun swap a b c = a c b
-
-(* Utils *)
+*) 
 
 fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {Type}]
            [tables ~ exps] [other ~ [Table,Body]] (q : sql_query [] [] tables exps)
@@ -100,7 +108,14 @@ fun hidingpanel (x:xbody) : transaction xbody =
   </xml>
 
 
-(* Data defineitions *)
+(*
+ ____        _              _       __ _       _ _   _                 
+|  _ \  __ _| |_ __ _    __| | ___ / _(_)_ __ (_) |_(_) ___  _ __  ___ 
+| | | |/ _` | __/ _` |  / _` |/ _ \ |_| | '_ \| | __| |/ _ \| '_ \/ __|
+| |_| | (_| | || (_| | | (_| |  __/  _| | | | | | |_| | (_) | | | \__ \
+|____/ \__,_|\__\__,_|  \__,_|\___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+
+*)
 
 con user_base = [UName = string, Bow = string , Birth = string, Club = string, Rank = string]
 
@@ -142,20 +157,85 @@ fun users_new_ fs =
       VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
   return i
 
-(**)
+(*
 
+ _____                    _       _       
+|_   _|__ _ __ ___  _ __ | | __ _| |_ ___ 
+  | |/ _ \ '_ ` _ \| '_ \| |/ _` | __/ _ \
+  | |  __/ | | | | | |_) | | (_| | ||  __/
+  |_|\___|_| |_| |_| .__/|_|\__,_|\__\___|
+                   |_|                    
 
-fun st {} = {
-  Title = "Competitions",
-  Main = url(compet_list {}),
-  Users = url(users_list {}),
-  About = url(about {}),
-  Init = url(init {})
-  }
+*)
+
+fun template (mb:transaction xbody) : transaction page =
+  u <- ap show currentUrl;
+  let
+    Uru.run (
+    myHeaders (
+    JQuery.add (
+    Bootstrap.add (
+    Uru.withBody (fn _ =>
+      b <- mb;
+      return
+        <xml>
+          <div class={cl (B.navbar :: B.navbar_inverse :: B.navbar_fixed_top :: [])} role="navigation">
+            <div class={B.container}>
+              <div class={B.navbar_header}>
+                <a class={B.navbar_brand} href={s.Main}>ArcCo</a>
+              </div>
+              <div class={cl (B.collapse :: B.navbar_collapse :: [])}>
+                <ul class={cl (B.nav :: B.navbar_nav :: [])}>
+                  {active s.Main "Competitions"}
+                  {active s.Users "Users"}
+                  {active s.Init "Init DB"}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class={B.container}>
+          {b}
+          </div>
+        </xml>
+      )))))
+
+  where
+
+    fun active (l:url) (t:string) =
+      case strsindex (show l) u of
+        |None => <xml><li><a href={l}>{[t]}</a></li></xml>
+        |Some _ => <xml><li class={B.active}><a href={l}>{[t]}</a></li></xml>
+
+    fun myHeaders f r = 
+      f (swap Uru.addHeader r
+        <xml>
+          <link rel="stylesheet" href={Compet_css.geturl}/>
+        </xml>)
+
+    val s = {
+      Title = "Competitions",
+      Main = url(compet_list {}),
+      Users = url(users_list {}),
+      About = url(about {}),
+      Init = url(init {})
+      }
+  end
+
+(*
+
+ __  __       _                          _   
+|  \/  | __ _(_)_ __    _ __   __ _ _ __| |_ 
+| |\/| |/ _` | | '_ \  | '_ \ / _` | '__| __|
+| |  | | (_| | | | | | | |_) | (_| | |  | |_ 
+|_|  |_|\__,_|_|_| |_| | .__/ \__,_|_|   \__|
+                       |_|                   
+
+*)
 
 and registered_details (cid:int) (uid:int) : transaction page =
   let
-    Templ.template (st {}) (
+    template  (
       fs <- oneRow1(SELECT * FROM compet_users AS U WHERE U.UId = {[uid]} AND U.CId = {[cid]});
       return <xml>
         <h3>{[fs.UName]}</h3>
@@ -202,7 +282,7 @@ and registered_details (cid:int) (uid:int) : transaction page =
 
 and compet_details2 cid =
   let
-    Templ.template (st {}) (
+    template (
       X.run (
         fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
         push <xml><h2>{[fs.CName]}</h2></xml>;
@@ -265,7 +345,7 @@ and compet_register cid uid : transaction {} =
 
 and compet_details cid =
   let
-    Templ.template (st {}) (
+    template (
       fs <- oneRow1(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
 
       t <- mktab (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (
@@ -356,7 +436,7 @@ and compet_new fs =
   redirect ( url (compet_list {}))
 
 and compet_list {} : transaction page = 
-  Templ.template (st {}) (
+  template (
     t <- mktab (SELECT * FROM compet AS T) (
         <xml>
           <tr>
@@ -388,7 +468,7 @@ and compet_list {} : transaction page =
 
 and users_list {} : transaction page =
   let
-    Templ.template (st {}) (
+    template (
 
       t <- mktab (SELECT * FROM users AS T) (
           <xml>
@@ -439,7 +519,7 @@ and users_list {} : transaction page =
 
     fun users_detail uid : transaction page = 
       let
-        Templ.template (st {}) (return
+        template (return
         <xml>
           {mkform
           <xml>

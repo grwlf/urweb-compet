@@ -1,17 +1,6 @@
 
 structure MT = State.Trans(struct con m = Basis.transaction end)
 
-(* Haskell-style helper *)
-fun forM_ [m ::: (Type -> Type)] (_ : monad m) [a] (ls:list a) (f:a -> m {}) : m {} =
-    let
-        fun mapM' ls =
-            case ls of
-              | []      => return {}
-              | x :: ls => f x; mapM' ls
-    in
-        mapM' ls
-    end
-
 con state = MT.state
 
 fun push [ctx:::{Unit}] (x:xml ctx [] []) : MT.state (xml ctx [] []) {} =

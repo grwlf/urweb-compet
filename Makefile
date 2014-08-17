@@ -15,7 +15,7 @@ URVERSION = $(shell urweb -version)
 all: ./Compet.exe ./Compet.sql ./Makefile
 .PHONY: tc
 tc: ./Makefile
-	urweb -tc -dumpTypes Compet
+	urweb -tc Compet
 .PHONY: dropdb
 dropdb: ./Compet.db ./Makefile
 ./Compet.db: ./Compet.exe ./Compet.sql ./Makefile
@@ -24,7 +24,7 @@ dropdb: ./Compet.db ./Makefile
 	psql -f ./Compet.sql Compet
 	touch ./Compet.db
 ./Compet.exe: .fix-multy1
-./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/Templ.ur ./src/Templ.urs ./src/XmlGen.ur .cake3/tmpCompet.in0 autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
+./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/Prelude.ur ./src/XmlGen.ur .cake3/tmpCompet.in0 autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
 	cat .cake3/tmpCompet.in0 > ./Compet.urp
 .cake3/tmpCompet.in0: ./Makefile
 	-rm -rf .cake3/tmpCompet.in0
@@ -51,9 +51,9 @@ dropdb: ./Compet.db ./Makefile
 	echo '' >> .cake3/tmpCompet.in0
 	echo '$$/list' >> .cake3/tmpCompet.in0
 	echo '$$/string' >> .cake3/tmpCompet.in0
+	echo './src/Prelude' >> .cake3/tmpCompet.in0
 	echo './src/XmlGen' >> .cake3/tmpCompet.in0
 	echo 'autogen/Compet_css' >> .cake3/tmpCompet.in0
-	echo './src/Templ' >> .cake3/tmpCompet.in0
 	echo './src/Compet' >> .cake3/tmpCompet.in0
 ./Compet.sql: .fix-multy1
 .INTERMEDIATE: .fix-multy1
@@ -99,8 +99,8 @@ dropdb: .fix-multy1
 .INTERMEDIATE: .fix-multy1
 .fix-multy1: 
 	-mkdir .cake3
-	$(MAKE) -C ./lib/uru3/Bootstrap -f Makefile 
-	$(MAKE) -C ./lib/urweb-monad-pack -f Makefile 
+	$(MAKE) -C ./lib/uru3/Bootstrap -f Makefile lib
+	$(MAKE) -C ./lib/urweb-monad-pack -f Makefile lib
 	MAIN=1 $(MAKE) -f ./Makefile $(MAKECMDGOALS)
 .PHONY: autogen/Compet_css_c.o
 autogen/Compet_css_c.o: .fix-multy1

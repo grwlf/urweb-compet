@@ -23,13 +23,13 @@ main = writeMake (file "Makefile") $ do
     safeGet "Compet.ur" "main"
     safeGet "Compet.ur" "init"
     sql (pn.="sql")
-    library' (externalMake "lib/uru3/Bootstrap/lib.urp")
-    library' (externalMake "lib/urweb-monad-pack/lib.urp")
+    library' (externalMakeTarget "lib/uru3/Bootstrap/lib.urp" "lib")
+    library' (externalMakeTarget "lib/urweb-monad-pack/lib.urp" "lib")
     ur (sys "list")
     ur (sys "string")
+    ur (single "src/Prelude.ur")
     ur (single "src/XmlGen.ur")
     bin ("src/Compet.css") [NoScan]
-    ur (pair "src/Templ.ur")
     ur (pair "src/Compet.ur")
 
   db <- rule $ do
@@ -46,8 +46,7 @@ main = writeMake (file "Makefile") $ do
 
   rule $ do
     phony "tc"
-    shell [cmd|urweb -tc -dumpTypes $(string "Compet")|]
-
+    shell [cmd|urweb -tc $(string "Compet")|]
 
   rule $ do
     phony "all"
