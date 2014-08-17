@@ -1,0 +1,25 @@
+# HG changeset patch
+# User Sergey Mironov <grrwlf@gmail.com>
+# Date 1408300117 0
+#      Sun Aug 17 18:28:37 2014 +0000
+# Node ID 0f5160a935e396c6369d03e72a7eba732607df84
+# Parent  8ebde8cb41a63dba451bb3f0335ff0669875fc1f
+Allow Body tags inside cformTags
+
+This is required by Bootstrap. For example, see
+  http://getbootstrap.com/components/#alerts-dismissible
+
+diff --git a/lib/ur/basis.urs b/lib/ur/basis.urs
+--- a/lib/ur/basis.urs
++++ b/lib/ur/basis.urs
+@@ -1013,8 +1013,8 @@
+ 
+ con cformTag = fn (attrs :: {Type}) (inner :: {Unit}) =>
+                   ctx ::: {Unit}
+-                  -> [[Body] ~ ctx] =>
+-                        unit -> tag attrs ([Body] ++ ctx) inner [] []
++                  -> [[Body] ~ ctx] => [[Body] ~ inner] =>
++                        unit -> tag attrs ([Body] ++ ctx) ([Body] ++ inner) [] []
+ 
+ val ctextbox : cformTag ([Value = string, Size = int, Source = source string, Placeholder = string, Onchange = transaction unit,
+                           Ontext = transaction unit] ++ boxAttrs) []
