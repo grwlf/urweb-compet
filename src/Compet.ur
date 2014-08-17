@@ -34,8 +34,16 @@ fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
 
 (* Bootstrap-based pills *)
 
-fun pills [a ::: Type] (b : X.state xbody a) : X.state xbody a =
-  swap nest b (fn x => <xml><ul class={cl (B.nav :: B.nav_pills :: [])}>{x}</ul></xml>)
+fun pills [a ::: Type] (f : (bool -> xbody -> X.state xbody {}) -> X.state xbody a) : X.state xbody a =
+  let
+    nest (fn x => <xml><ul class={cl (B.nav :: B.nav_pills :: [])}>{x}</ul></xml>) (f pill)
+  where
+    fun pill (active:bool) (x:xbody) : X.state xbody {} =
+      (case active of
+       |True => push <xml><li class={B.active}>{x}</li></xml>
+       |False => push <xml><li>{x}</li></xml>);
+      return {}
+  end
 
 (** Old-styled *)
 
@@ -298,10 +306,10 @@ and compet_details2 cid =
         push <xml><h2>{[fs.CName]}</h2></xml>;
         push <xml><h3>Scores</h3></xml>;
 
-        pills (
-          push <xml><li class={B.active}>Pill 1</li></xml>;
-          push <xml><li>Pill 1</li></xml>;
-          push <xml><li>Pill 1</li></xml>;
+        pills (fn pill => 
+          pill True <xml><a link={main {}}>Pill 1</a></xml>;
+          pill False <xml><a link={main {}}>Pill 2</a></xml>;
+          pill False <xml><a link={main {}}>Pill 3</a></xml>;
           return {});
 
         tnest (
