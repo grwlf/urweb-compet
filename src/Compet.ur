@@ -7,6 +7,9 @@ val swap = @@P.swap
 val ap = @@P.ap
 val cl = @@CSS.list
 
+val nest = @@X.nest
+val push = @@X.push
+
 style invisible
 style visible
 
@@ -18,6 +21,23 @@ style visible
  \___/ \__|_|_|___/
 
 *) 
+
+(** XMLGen-based *)
+
+fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
+  nest (fn x =>
+    <xml>
+      <table class={cl (B.bs3_table :: B.table_striped :: [])}>
+        {x}
+      </table>
+    </xml>) nb
+
+(* Bootstrap-based pills *)
+
+fun pills [a ::: Type] (b : X.state xbody a) : X.state xbody a =
+  swap nest b (fn x => <xml><ul class={cl (B.nav :: B.nav_pills :: [])}>{x}</ul></xml>)
+
+(** Old-styled *)
 
 fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {Type}]
            [tables ~ exps] [other ~ [Table,Body]] (q : sql_query [] [] tables exps)
@@ -31,16 +51,6 @@ fun mktab [other ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [inp ::: {T
       {r}
     </table>
   </xml>
-
-fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
-  X.nest (fn x =>
-    <xml>
-      <table class={cl (B.bs3_table :: B.table_striped :: [])}>
-        {x}
-      </table>
-    </xml>) nb
-
-fun push [ctx] x = @@X.push [ctx] x
 
 fun formgroup [nm :: Name] [other ::: {Unit}] [inp ::: {Type}] 
                 [other ~ [Body,Form]] [inp ~ [nm=string]]
@@ -287,6 +297,12 @@ and compet_details2 cid =
         fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
         push <xml><h2>{[fs.CName]}</h2></xml>;
         push <xml><h3>Scores</h3></xml>;
+
+        pills (
+          push <xml><li class={B.active}>Pill 1</li></xml>;
+          push <xml><li>Pill 1</li></xml>;
+          push <xml><li>Pill 1</li></xml>;
+          return {});
 
         tnest (
           push
