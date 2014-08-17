@@ -5,10 +5,17 @@ structure CSS = CSS
 
 val swap = @@P.swap
 val ap = @@P.ap
+val fst = @@P.fst
+val snd = @@P.snd
+
 val cl = @@CSS.list
 
 val nest = @@X.nest
 val push = @@X.push
+val lift = @@X.lift
+
+val data = data_attr data_kind
+val aria = data_attr aria_kind
 
 style invisible
 style visible
@@ -22,6 +29,13 @@ style visible
 
 *) 
 
+fun checked [x ::: Type] (l : list (source bool * x)) : transaction (list x) =
+  List.mapPartialM (fn (s,r) =>
+    v <- get s;
+    case v of
+      |True => return (Some r)
+      |False => return None) l
+
 (** XMLGen-based *)
 
 fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
@@ -31,6 +45,35 @@ fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
         {x}
       </table>
     </xml>) nb
+
+fun info_success (s:string) : X.state xbody (source string) =
+  let
+    s <- X.source s;
+    push
+        <xml><p>
+          <dyn signal={v <- signal s;
+            case v of
+              |"" => return <xml><div class={invisible}>{label "OK"}</div></xml>
+              |_=> return <xml>{label v}</xml>
+            }/>
+        </p></xml>;
+      return s
+  where
+    fun label v = 
+      <xml>
+        <div class={cl (B.alert :: B.alert_success :: B.alert_dismissable :: [])} role="alert">
+          <button value="" class={B.close} data={data "dismiss" "alert"} onclick={fn _ => return {}}>
+            <span data={aria "hidden" "true"}>&times;</span>
+            <span class={B.sr_only}>
+              Close
+            </span>
+          </button>
+          {[v]}
+        </div>
+      </xml>
+  end
+
+(* fun info_fail s = push <xml><div class={cl (B.alert :: B.alert_danger :: [])} role="alert">{[s]}</div></xml> *)
 
 (* Bootstrap-based pills *)
 
@@ -154,7 +197,7 @@ table compet : compet
 sequence competSeq
 
 
-table compet_users : ([CId = int, UId = int] ++ user_base)
+table compet_users : ([CId = int, UId = int] ++ user_base ++ [Target = string])
   PRIMARY KEY (CId, UId),
   CONSTRAINT CU_U FOREIGN KEY (UId) REFERENCES users (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CU_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
@@ -174,6 +217,15 @@ fun users_new_ fs =
   dml(INSERT INTO users (Id,UName,Bow,Birth,Rank,Club)
       VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
   return i
+
+fun compet_register_ cid uid : transaction {} =
+  u <- oneRow1(SELECT * FROM users AS U WHERE U.Id = {[uid]});
+  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank, Target)
+      VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
+  dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
+  dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
+  return {}
+
 
 (*
 
@@ -295,111 +347,104 @@ and registered_details (cid:int) (uid:int) : transaction page =
     fun registered_unregister _ =
       dml(DELETE FROM compet_users WHERE CId = {[cid]} AND UId = {[uid]});
       dml(DELETE FROM scores WHERE CId = {[cid]} AND UId = {[uid]});
-      redirect( url (compet_details cid) )
+      redirect( url (compet_register cid) )
   end
 
 and compet_pills (me:url) cid = pills me (fn pill =>
-  pill (url(compet_details2 cid)) <xml>Targets</xml>;
-  pill (url(compet_details cid)) <xml>Scores</xml>;
+  pill (url(compet_register cid)) <xml>Registration</xml>;
+  pill (url(compet_targets cid)) <xml>Targets</xml>;
+  pill (url(compet_details2 cid)) <xml>Scores</xml>;
+  pill (url(compet_admin cid)) <xml>Admin</xml>;
   return {})
 
-and compet_details2 cid =
+and compet_caption cid cap =
+  fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
+  push <xml><h2>{[fs.CName]}</h2></xml>;
+  push <xml><h3>{[cap]}</h3></xml>;
+  return fs
+
+and compet_caption_ cid cap =
+  _ <- compet_caption cid cap;
+  return {}
+
+and compet_targets cid =
   let
     me <- currentUrl;
-    template (
-      X.run (
-        fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
-        push <xml><h2>{[fs.CName]}</h2></xml>;
-        push <xml><h3>Scores</h3></xml>;
+    template ( X.run (
+      
+      compet_caption_ cid "Target assignments";
 
-        compet_pills me cid;
+      compet_pills me cid;
 
-        tnest (
-          push
-            <xml><tr>
-              <th></th>
-              <th>Name</th>
-              <th>Birth</th>
-              <th>Bow</th>
-              <th>Club</th>
-              <th>Round 1</th>
-              <th>Round 2</th>
-              <th></th>
-            </tr></xml>;
+      i <- info_success "";
 
-          X.query_ (
+      ss <- tnest (
+        push
+          <xml><tr>
+            <th></th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Target</th>
+          </tr></xml>;
+
+        X.query (
             SELECT *
-            FROM compet_users AS CU,
-                 scores AS S0,
-                 scores AS S1
-            WHERE
-                  CU.CId = {[cid]}
-              AND S0.CId = {[cid]}
-              AND S0.Round = 0     
-              AND S0.UId = CU.UId
-              AND S1.CId = {[cid]}
-              AND S1.Round = 1
-              AND S1.UId = CU.UId
+            FROM compet_users AS CU
+            WHERE CU.CId = {[cid]}
+            ORDER BY CU.UId
           )
-            
-          (fn fs =>
-            s <- X.source False;
+
+          []
+
+          (fn fs ss =>
+            s <- X.source True;
+            e <- X.source fs.CU.Target;
             push
               <xml><tr>
                 <td><ccheckbox source={s}/></td>
+                <td>{[fs.CU.UId]}</td>
                 <td>{[fs.CU.UName]}</td>
-                <td>{[fs.CU.Birth]}</td>
-                <td>{[fs.CU.Bow]}</td>
-                <td>{[fs.CU.Club]}</td>
-                <td>{[fs.S0.Score]}</td>
-                <td>{[fs.S1.Score]}</td>
-                <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
-              </tr></xml>)
-        )
-      )
-    )
+                <td><ctextbox source={e}/></td>
+              </tr></xml>;
+            return ((s,(fs.CU.UId,e)) :: ss)
+          )
+      );
+
+      push <xml>
+        <button value="Assign selected" onclick={fn _ => 
+          cs <- checked ss;
+          P.forM_ cs (fn (id, e) => set e "blabla");
+          return {}
+          } />
+        </xml>;
+
+      push <xml>
+        <button value="Apply" onclick={fn _ => 
+          vs <- P.forM ss (fn (_,(id,e)) => v <- get e; return (id,v));
+          rpc(compet_targets_apply vs);
+          set i "Success";
+          return {}
+          } />
+        </xml>;
+
+      return {}
+    ))
   where
+    fun compet_targets_apply lst =
+      P.forM_ lst (fn (id,v) =>
+        dml(UPDATE compet_users SET Target = {[v]} WHERE CId = {[cid]} AND UId = {[id]}))
   end
 
-and compet_register cid uid : transaction {} =
-  u <- oneRow1(SELECT * FROM users AS U WHERE U.Id = {[uid]});
-  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank)
-      VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}));
-  dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
-  dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
-  return {}
-
-and compet_details cid =
+and compet_admin cid =
   let
-    template (
-      fs <- oneRow1(SELECT * FROM compet AS T WHERE T.Id = {[cid]});
+    me <- currentUrl;
+    template ( X.run (
+      
+      fs <- compet_caption cid "Admin";
 
-      t <- mktab (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]}) (
-        <xml>
-          <tr>
-            <th>Name</th>
-            <th>Birth</th>
-            <th>Bow</th>
-            <th>Club</th>
-            <th></th>
-          </tr>
-        </xml>)
+      compet_pills me cid;
 
-        (fn fs =>
-        <xml>
-          <tr>
-            <td>{[fs.CU.UName]}</td>
-            <td>{[fs.CU.Birth]}</td>
-            <td>{[fs.CU.Bow]}</td>
-            <td>{[fs.CU.Club]}</td>
-            <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
-          </tr>
-        </xml>);
-
-      ss <- source "";
-      ss2 <- source [];
-
-      hp <- hidingpanel
+      push
         <xml>
           <p>
             <h3>Change name</h3>
@@ -416,13 +461,110 @@ and compet_details cid =
           </p>
         </xml>;
 
-      return
-      <xml>
-        <h2>{[fs.CName]}</h2>
-        {hp}
-        <h3>Registered users</h3>
-        {mkrow t}
-        <div>
+      return {}
+
+    ))
+  where
+    fun compet_update new : transaction page =
+      dml(UPDATE compet SET CName = {[new.CName]} WHERE Id = {[cid]});
+      redirect ( url (compet_admin cid))
+
+    fun compet_delete _ : transaction page =
+      dml(DELETE FROM compet WHERE Id = {[cid]});
+      redirect (url (compet_list {}))
+  end
+
+and compet_details2 cid =
+  let
+    me <- currentUrl;
+    template ( X.run (
+
+      compet_caption_ cid "Scores";
+
+      compet_pills me cid;
+
+      tnest (
+        push
+          <xml><tr>
+            <th></th>
+            <th>Name</th>
+            <th>Birth</th>
+            <th>Bow</th>
+            <th>Club</th>
+            <th>Round 1</th>
+            <th>Round 2</th>
+            <th></th>
+          </tr></xml>;
+
+        X.query_ (
+          SELECT *
+          FROM compet_users AS CU,
+               scores AS S0,
+               scores AS S1
+          WHERE
+                CU.CId = {[cid]}
+            AND S0.CId = {[cid]}
+            AND S0.Round = 0     
+            AND S0.UId = CU.UId
+            AND S1.CId = {[cid]}
+            AND S1.Round = 1
+            AND S1.UId = CU.UId
+        )
+          
+        (fn fs =>
+          s <- X.source False;
+          push
+            <xml><tr>
+              <td><ccheckbox source={s}/></td>
+              <td>{[fs.CU.UName]}</td>
+              <td>{[fs.CU.Birth]}</td>
+              <td>{[fs.CU.Bow]}</td>
+              <td>{[fs.CU.Club]}</td>
+              <td>{[fs.S0.Score]}</td>
+              <td>{[fs.S1.Score]}</td>
+              <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
+            </tr></xml>)
+      )
+    ))
+  where
+  end
+
+and compet_register cid =
+  let
+    me <- currentUrl;
+    template ( X.run (
+
+      compet_caption_ cid "Registeration";
+
+      compet_pills me cid;
+
+      tnest (
+        push 
+          <xml><tr>
+            <th>Name</th>
+            <th>Birth</th>
+            <th>Bow</th>
+            <th>Club</th>
+            <th></th>
+          </tr></xml>;
+
+        X.query_ (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]})
+          (fn fs =>
+            push
+              <xml><tr>
+                <td>{[fs.CU.UName]}</td>
+                <td>{[fs.CU.Birth]}</td>
+                <td>{[fs.CU.Bow]}</td>
+                <td>{[fs.CU.Club]}</td>
+                <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
+              </tr></xml>);
+         return {});
+
+      ss <- X.source "";
+      ss2 <- X.source [];
+
+      push
+        <xml><div>
           <ctextbox source={ss}/>
           <button value="Search" onclick={fn _ =>
             v <- get ss;
@@ -435,26 +577,19 @@ and compet_details cid =
               <xml>
                 <br/>
                 <button value="Register" onclick={fn _ =>
-                  rpc (compet_register cid x.Id);
-                  redirect (url (compet_details cid))
+                  rpc (compet_register_ cid x.Id);
+                  redirect (url (compet_register cid))
                 }/>
                 {[x.UName]} ({[x.Birth]})
               </xml>
               ))
            }/>
-        </div>
-      </xml>
-      )
+        </div></xml>;
+
+      return {}
+      ))
 
   where
-
-    fun compet_update new : transaction page =
-      dml(UPDATE compet SET CName = {[new.CName]} WHERE Id = {[cid]});
-      redirect ( url (compet_details cid))
-
-    fun compet_delete _ : transaction page =
-      dml(DELETE FROM compet WHERE Id = {[cid]});
-      redirect (url (compet_list {}))
   end
 
 and compet_new fs = 
@@ -478,7 +613,7 @@ and compet_list {} : transaction page =
           <tr>
             <td>{[fs.T.Id]}</td>
             <td>{[fs.T.CName]}</td>
-            <td> <a link={compet_details fs.T.Id}>[Details]</a> </td>
+            <td> <a link={compet_register fs.T.Id}>[Details]</a> </td>
             <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
           </tr>
         </xml>);
@@ -582,12 +717,12 @@ and init {} : transaction page =
   u3 <- users_new_ {UName="Петров Иван", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
   u4 <- users_new_ {UName="Дмитриев Дмитрий", Bow="Блок", Birth="03.04.1978", Rank="1", Club="СДЮШОР8"};
   u5 <- users_new_ {UName="Петров Пётр", Bow="Блок", Birth="03.04.1988", Rank="2", Club="СДЮШОР8"};
-  compet_register c1 u1;
-  compet_register c1 u2;
-  compet_register c1 u3;
-  compet_register c2 u1;
-  compet_register c2 u4;
-  compet_register c2 u5;
+  compet_register_ c1 u1;
+  compet_register_ c1 u2;
+  compet_register_ c1 u3;
+  compet_register_ c2 u1;
+  compet_register_ c2 u4;
+  compet_register_ c2 u5;
   redirect (url (compet_list {}))
 
 

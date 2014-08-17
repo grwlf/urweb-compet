@@ -6,6 +6,8 @@ con state = MT.state
 fun push [ctx:::{Unit}] (x:xml ctx [] []) : MT.state (xml ctx [] []) {} =
   MT.modify (fn s => <xml>{s}{x}</xml>)
 
+val lift = @@MT.lift
+
 fun nest [a ::: Type] [ctx:::{Unit}] [ctx2 :::{Unit}]
     (f:xml ctx2 [] [] -> xml ctx [] [])
     (x:MT.state (xml ctx2 [] []) a)

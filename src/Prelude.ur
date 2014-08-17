@@ -14,3 +14,13 @@ fun forM_ [m ::: (Type -> Type)] (_ : monad m) [a] (ls:list a) (f:a -> m {}) : m
     in
         mapM' ls
     end
+
+fun forM [m ::: (Type -> Type)] (_ : monad m) [a] [b] (ls:list a) (f:a -> m b) : m (list b) = List.mapM f ls
+
+fun fst [a:::Type] [b:::Type] ((x,_):(a*b)) : a = x
+
+fun snd [a:::Type] [b:::Type] ((_,y):(a*b)) : b = y
+
+(* val show_pair [a] [b] [show a] [show b] : show (a*b) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")") *)
+
+val show_int_string  : show (int*string) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")")
