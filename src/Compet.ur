@@ -34,14 +34,14 @@ fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
 
 (* Bootstrap-based pills *)
 
-fun pills [a ::: Type] (f : (bool -> xbody -> X.state xbody {}) -> X.state xbody a) : X.state xbody a =
+fun pills [a ::: Type] (eu:url) (f : (url -> xbody -> X.state xbody {}) -> X.state xbody a) : X.state xbody a =
   let
     nest (fn x => <xml><ul class={cl (B.nav :: B.nav_pills :: [])}>{x}</ul></xml>) (f pill)
   where
-    fun pill (active:bool) (x:xbody) : X.state xbody {} =
-      (case active of
-       |True => push <xml><li class={B.active}>{x}</li></xml>
-       |False => push <xml><li>{x}</li></xml>);
+    fun pill (u:url) (x:xbody) : X.state xbody {} =
+      (case (show u) = (show eu) of
+       |True => push <xml><li class={B.active}><a href={u}>{x}</a></li></xml>
+       |False => push <xml><li><a href={u}>{x}</a></li></xml>);
       return {}
   end
 
@@ -298,19 +298,21 @@ and registered_details (cid:int) (uid:int) : transaction page =
       redirect( url (compet_details cid) )
   end
 
+and compet_pills (me:url) cid = pills me (fn pill =>
+  pill (url(compet_details2 cid)) <xml>Targets</xml>;
+  pill (url(compet_details cid)) <xml>Scores</xml>;
+  return {})
+
 and compet_details2 cid =
   let
+    me <- currentUrl;
     template (
       X.run (
         fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
         push <xml><h2>{[fs.CName]}</h2></xml>;
         push <xml><h3>Scores</h3></xml>;
 
-        pills (fn pill => 
-          pill True <xml><a link={main {}}>Pill 1</a></xml>;
-          pill False <xml><a link={main {}}>Pill 2</a></xml>;
-          pill False <xml><a link={main {}}>Pill 3</a></xml>;
-          return {});
+        compet_pills me cid;
 
         tnest (
           push
