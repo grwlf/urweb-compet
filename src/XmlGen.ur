@@ -31,10 +31,13 @@ fun query_ [ctx ::: {Unit}] [tables ::: {{Type}}] [exps ::: {Type}] [tables ~ ex
   MT.set x';
   return {}
 
+fun oneRow [st ::: Type] [tables ::: {{Type}}] [exps ::: {Type}] [tables ~ exps]
+  (q : sql_query [] [] tables exps) : MT.state st $(exps ++ map (fn fields :: {Type} => $fields) tables) =
+    MT.lift ( Top.oneRow q )
+
 fun oneRow1 [st ::: Type] [nm ::: Name] [fs ::: {Type}]
   (q:sql_query [] [] [nm = fs] []) : MT.state st $fs =
     MT.lift ( Top.oneRow1 q )
-
 
 (*
     _    ____ ___       ____  

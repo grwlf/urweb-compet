@@ -660,16 +660,20 @@ and complist_view {} : transaction page =
 
       push_back_xml
       <xml><tr>
-        <th>ID</th><th>Name</th><th/><th/>
+        <th>ID</th><th>Name</th><th>Participants</th><th/><th/>
       </tr></xml>;
 
       X.query_
       (SELECT * FROM compet AS T)
       (fn fs =>
+
+        c <- X.oneRow (SELECT COUNT( * ) AS N FROM compet_users AS CU WHERE CU.CId = {[fs.T.Id]});
+
         push_back_xml
         <xml><tr>
           <td>{[fs.T.Id]}</td>
           <td>{[fs.T.CName]}</td>
+          <td>{[c.N]}</td>
           <td> <a link={compet_register fs.T.Id}>[Details]</a> </td>
           <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
         </tr></xml>
