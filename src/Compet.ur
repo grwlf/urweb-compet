@@ -394,7 +394,7 @@ and compet_targets cid =
             <th>Target</th>
           </tr></xml>;
 
-          X.query
+          P.ap List.rev (X.query
           (
             SELECT *
             FROM compet_users AS CU
@@ -415,7 +415,7 @@ and compet_targets cid =
             </tr></xml>;
 
             return ((s,(fs.CU.UId,e)) :: ss)
-          )
+          ))
         ));
 
         push_front( nest_id (
@@ -424,13 +424,32 @@ and compet_targets cid =
           push_back_xml <xml>Number of targets <ctextbox source={ntargets}/><br/></xml>;
 
           letters <- X.source "ABCD";
-          push_back_xml <xml>Target letters <ctextbox source={letters}/><br/></xml>;
+          push_back_xml <xml>Slots per target <ctextbox source={letters}/><br/></xml>;
 
           push_back_xml
           <xml>
             <button value="Assign selected" onclick={fn _ => 
               cs <- checked ss;
-              P.forM_ cs (fn (id, e) => set e "blabla");
+              ntgt <- P.ap readError (get ntargets);
+              slots' <- P.ap P.strlist (get letters);
+
+              P.foldlM_ (
+                fn (id, e) (tgt,slots) =>
+                  case tgt > ntgt of
+                    |True => (set e "" ; return (tgt,slots))
+                    |False =>
+                      (case slots of
+                        | s :: [] =>
+                          set e ((show tgt) ^ (str1 s));
+                          return (tgt+1, slots')
+                        | s :: ss => 
+                          set e ((show tgt) ^ (str1 s));
+                          return (tgt, ss)
+                        | [] =>
+                          set e ((show tgt));
+                          return (tgt+1, [])
+                      )
+                ) (1,slots') cs;
               return {}
             }/>
           </xml>;
