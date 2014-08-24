@@ -16,7 +16,6 @@ val push_back = @@X.push_back
 val push_front = @@X.push_front
 val push_back_ = @@X.push_back_
 val push_front_ = @@X.push_front_
-val nest_id = @@X.nest_id
 val push_back_xml = @@X.push_back_xml
 
 val data = data_attr data_kind
@@ -384,7 +383,7 @@ and compet_targets cid =
 
       i <- info_success "";
 
-      push_back ( nest_id (
+      push_back ( nest P.id (
         ss <- push_back( tnest (
           push_back_xml
           <xml><tr>
@@ -418,7 +417,7 @@ and compet_targets cid =
           ))
         ));
 
-        push_front( nest_id (
+        push_front( nest P.id (
 
           ntargets <- X.source "10";
           push_back_xml <xml>Number of targets <ctextbox source={ntargets}/><br/></xml>;

@@ -51,3 +51,5 @@ fun foldlM_ [m ::: (Type -> Type)] (_ : monad m) [a ::: Type] [b ::: Type]
     _ <- List.foldlM f s l;
     return {}
 
+fun id [t ::: Type] (x:t) : t = x
+

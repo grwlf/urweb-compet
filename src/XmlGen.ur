@@ -78,8 +78,3 @@ fun nest [a ::: Type] [ctx:::{Unit}] [ctx2 :::{Unit}]
   (x,a) <- MT.lift (MT.run <xml/> s);
   return (f x, a)
 
-fun nest_id [a ::: Type] [ctx:::{Unit}]
-    (s:MT.state (xml ctx [] []) a)
-      : MT.state (xml ctx [] []) (xml ctx [] [] * a) =
-  nest (fn x => x) s
-
