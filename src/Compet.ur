@@ -11,8 +11,13 @@ val snd = @@P.snd
 val cl = @@CSS.list
 
 val nest = @@X.nest
-val push = @@X.push
 val lift = @@X.lift
+val push_back = @@X.push_back
+val push_front = @@X.push_front
+val push_back_ = @@X.push_back_
+val push_front_ = @@X.push_front_
+val nest_id = @@X.nest_id
+val push_back_xml = @@X.push_back_xml
 
 val data = data_attr data_kind
 val aria = data_attr aria_kind
@@ -38,10 +43,7 @@ fun checked [x ::: Type] (l : list (source bool * x)) : transaction (list x) =
 
 (** XMLGen-based *)
 
-fun idnest [a ::: Type] (nb : X.state xbody a) : X.state xbody a =
-  nest (fn x =><xml>{x}</xml>) nb
-
-fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
+fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody (xbody * a) =
   nest (fn x =>
     <xml>
       <table class={cl (B.bs3_table :: B.table_striped :: [])}>
@@ -52,15 +54,16 @@ fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
 fun info_success (s:string) : X.state xbody (source string) =
   let
     s <- X.source s;
-    push
-        <xml><p>
-          <dyn signal={v <- signal s;
-            case v of
-              |"" => return <xml><div class={invisible}>{label "OK"}</div></xml>
-              |_=> return <xml>{label v}</xml>
-            }/>
-        </p></xml>;
-      return s
+    push_back_xml
+    <xml><p>
+      <dyn signal={v <- signal s;
+        case v of
+          |"" => return <xml><div class={invisible}>{label "OK"}</div></xml>
+          |_=> return <xml>{label v}</xml>
+        }/>
+    </p></xml>;
+    return s
+
   where
     fun label v = 
       <xml>
@@ -82,12 +85,12 @@ fun info_success (s:string) : X.state xbody (source string) =
 
 fun pills [a ::: Type] (eu:url) (f : (url -> xbody -> X.state xbody {}) -> X.state xbody a) : X.state xbody a =
   let
-    nest (fn x => <xml><ul class={cl (B.nav :: B.nav_pills :: [])}>{x}</ul></xml>) (f pill)
+    push_back( nest (fn x => <xml><ul class={cl (B.nav :: B.nav_pills :: [])}>{x}</ul></xml>) (f pill))
   where
     fun pill (u:url) (x:xbody) : X.state xbody {} =
       (case (show u) = (show eu) of
-       |True => push <xml><li class={B.active}><a href={u}>{x}</a></li></xml>
-       |False => push <xml><li><a href={u}>{x}</a></li></xml>);
+       |True => push_back_xml <xml><li class={B.active}><a href={u}>{x}</a></li></xml>
+       |False => push_back_xml <xml><li><a href={u}>{x}</a></li></xml>);
       return {}
   end
 
@@ -288,7 +291,7 @@ fun template (mb:transaction xbody) : transaction page =
 
     val s = {
       Title = "Competitions",
-      Main = url(clist_view {}),
+      Main = url(complist_view {}),
       Users = url(users_list {}),
       About = url(about {}),
       Init = url(init {})
@@ -362,8 +365,8 @@ and compet_pills (me:url) cid = pills me (fn pill =>
 
 and compet_caption cid cap =
   fs <- X.oneRow1 (SELECT * FROM compet AS T WHERE T.Id = {[cid]});
-  push <xml><h2>{[fs.CName]}</h2></xml>;
-  push <xml><h3>{[cap]}</h3></xml>;
+  push_back_xml <xml><h2>{[fs.CName]}</h2></xml>;
+  push_back_xml <xml><h3>{[cap]}</h3></xml>;
   return fs
 
 and compet_caption_ cid cap =
@@ -381,10 +384,9 @@ and compet_targets cid =
 
       i <- info_success "";
 
-      idnest (
-
-        ss <- tnest (
-          push
+      push_back ( nest_id (
+        ss <- push_back( tnest (
+          push_back_xml
           <xml><tr>
             <th></th>
             <th>ID</th>
@@ -404,7 +406,7 @@ and compet_targets cid =
             s <- X.source True;
             e <- X.source fs.CU.Target;
 
-            push
+            push_back_xml
             <xml><tr>
               <td><ccheckbox source={s}/></td>
               <td>{[fs.CU.UId]}</td>
@@ -414,35 +416,36 @@ and compet_targets cid =
 
             return ((s,(fs.CU.UId,e)) :: ss)
           )
-        );
+        ));
 
-        ntargets <- X.source "10";
-        push <xml>Number of targets <ctextbox source={ntargets}/><br/></xml>;
+        push_front( nest_id (
 
-        letters <- X.source "ABCD";
-        push <xml>Target letters <ctextbox source={letters}/><br/></xml>;
+          ntargets <- X.source "10";
+          push_back_xml <xml>Number of targets <ctextbox source={ntargets}/><br/></xml>;
 
-        push
-        <xml>
-          <button value="Assign selected" onclick={fn _ => 
-            cs <- checked ss;
-            P.forM_ cs (fn (id, e) => set e "blabla");
-            return {}
-          }/>
-        </xml>;
+          letters <- X.source "ABCD";
+          push_back_xml <xml>Target letters <ctextbox source={letters}/><br/></xml>;
 
-        push
-        <xml>
-          <button value="Apply" onclick={fn _ => 
-            vs <- P.forM ss (fn (_,(id,e)) => v <- get e; return (id,v));
-            rpc(compet_targets_apply vs);
-            set i "Success";
-            return {}
-          } />
-        </xml>;
+          push_back_xml
+          <xml>
+            <button value="Assign selected" onclick={fn _ => 
+              cs <- checked ss;
+              P.forM_ cs (fn (id, e) => set e "blabla");
+              return {}
+            }/>
+          </xml>;
 
-        return {}
-      )
+          push_back_xml
+          <xml>
+            <button value="Apply" onclick={fn _ => 
+              vs <- P.forM ss (fn (_,(id,e)) => v <- get e; return (id,v));
+              rpc(compet_targets_apply vs);
+              set i "Success";
+              return {}
+            } />
+          </xml>
+        ))
+      ))
     ))
   where
     fun compet_targets_apply lst =
@@ -459,7 +462,7 @@ and compet_admin cid =
 
       compet_pills me cid;
 
-      push
+      push_back_xml
         <xml>
           <p>
             <h3>Change name</h3>
@@ -486,7 +489,7 @@ and compet_admin cid =
 
     fun compet_delete _ : transaction page =
       dml(DELETE FROM compet WHERE Id = {[cid]});
-      redirect (url (clist_view {}))
+      redirect (url (complist_view {}))
   end
 
 and compet_details2 cid =
@@ -498,18 +501,19 @@ and compet_details2 cid =
 
       compet_pills me cid;
 
-      tnest (
-        push
-          <xml><tr>
-            <th></th>
-            <th>Name</th>
-            <th>Birth</th>
-            <th>Bow</th>
-            <th>Club</th>
-            <th>Round 1</th>
-            <th>Round 2</th>
-            <th></th>
-          </tr></xml>;
+      push_back ( tnest (
+
+        push_back_xml
+        <xml><tr>
+          <th></th>
+          <th>Name</th>
+          <th>Birth</th>
+          <th>Bow</th>
+          <th>Club</th>
+          <th>Round 1</th>
+          <th>Round 2</th>
+          <th></th>
+        </tr></xml>;
 
         X.query_ (
           SELECT *
@@ -528,18 +532,19 @@ and compet_details2 cid =
           
         (fn fs =>
           s <- X.source False;
-          push
-            <xml><tr>
-              <td><ccheckbox source={s}/></td>
-              <td>{[fs.CU.UName]}</td>
-              <td>{[fs.CU.Birth]}</td>
-              <td>{[fs.CU.Bow]}</td>
-              <td>{[fs.CU.Club]}</td>
-              <td>{[fs.S0.Score]}</td>
-              <td>{[fs.S1.Score]}</td>
-              <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
-            </tr></xml>)
-      )
+
+          push_back_xml
+          <xml><tr>
+            <td><ccheckbox source={s}/></td>
+            <td>{[fs.CU.UName]}</td>
+            <td>{[fs.CU.Birth]}</td>
+            <td>{[fs.CU.Bow]}</td>
+            <td>{[fs.CU.Club]}</td>
+            <td>{[fs.S0.Score]}</td>
+            <td>{[fs.S1.Score]}</td>
+            <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
+          </tr></xml>)
+      ))
     ))
   where
   end
@@ -553,73 +558,81 @@ and compet_register cid =
 
       compet_pills me cid;
 
-      tnest (
-        push 
-          <xml><tr>
-            <th>Name</th>
-            <th>Birth</th>
-            <th>Bow</th>
-            <th>Club</th>
-            <th></th>
-          </tr></xml>;
+      push_back( tnest (
+
+        push_back_xml
+        <xml><tr>
+          <th>Name</th>
+          <th>Birth</th>
+          <th>Bow</th>
+          <th>Club</th>
+          <th></th>
+        </tr></xml>;
 
         X.query_ (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]})
-          (fn fs =>
-            push
-              <xml><tr>
-                <td>{[fs.CU.UName]}</td>
-                <td>{[fs.CU.Birth]}</td>
-                <td>{[fs.CU.Bow]}</td>
-                <td>{[fs.CU.Club]}</td>
-                <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
-              </tr></xml>);
-         return {});
+        (fn fs =>
+          push_back_xml
+          <xml><tr>
+            <td>{[fs.CU.UName]}</td>
+            <td>{[fs.CU.Birth]}</td>
+            <td>{[fs.CU.Bow]}</td>
+            <td>{[fs.CU.Club]}</td>
+            <td><a link={registered_details cid fs.CU.UId}>[Details]</a></td>
+          </tr></xml>
+       )
+
+      ));
 
       ss <- X.source "";
       ss2 <- X.source [];
 
-      push
-        <xml><div>
-          <ctextbox source={ss}/>
-          <button value="Search" onclick={fn _ =>
-            v <- get ss;
-            ls <- rpc (users_search cid v);
-            set ss2 ls
-          }/>
-          <dyn signal={
-            l <- signal ss2;
-            return (swap List.mapX l (fn x =>
-              <xml>
-                <br/>
-                <button value="Register" onclick={fn _ =>
-                  rpc (compet_register_ cid x.Id);
-                  redirect (url (compet_register cid))
-                }/>
-                {[x.UName]} ({[x.Birth]})
-              </xml>
-              ))
-           }/>
-        </div></xml>;
-
-      return {}
-      ))
+      push_back_xml
+      <xml><div>
+        <ctextbox source={ss}/>
+        <button value="Search" onclick={fn _ =>
+          v <- get ss;
+          ls <- rpc (users_search cid v);
+          set ss2 ls
+        }/>
+        <dyn signal={
+          l <- signal ss2;
+          return (swap List.mapX l (fn x =>
+            <xml>
+              <br/>
+              <button value="Register" onclick={fn _ =>
+                rpc (compet_register_ cid x.Id);
+                redirect (url (compet_register cid))
+              }/>
+              {[x.UName]} ({[x.Birth]})
+            </xml>
+            ))
+         }/>
+      </div></xml>
+    ))
 
   where
   end
 
+and complist_caption cap =
+  push_back_xml <xml><h2>Competitions</h2></xml>;
+  push_back_xml <xml><h3>{[cap]}</h3></xml>;
+  return {}
+
 and complist_pills (me:url) = pills me (fn pill =>
-  pill (url(clist_view {})) <xml>List</xml>;
-  pill (url(clist_add {})) <xml>Add</xml>;
+  pill (url(complist_view {})) <xml>List</xml>;
+  pill (url(complist_add {})) <xml>Add</xml>;
   return {})
 
-and clist_add {} =
+and complist_add {} =
   let
     me <- currentUrl;
     template ( X.run (
 
+      complist_caption "Add new competition";
+
       complist_pills me;
 
-      push
+      push_back_xml
       <xml>
         {mkrow (mkform
         <xml>
@@ -632,15 +645,20 @@ and clist_add {} =
   where
     fun compet_new fs = 
       _ <- compet_new_ fs;
-      redirect ( url (clist_view {}))
+      redirect ( url (complist_view {}))
   end
 
-and clist_view {} : transaction page = 
+and complist_view {} : transaction page = 
   me <- currentUrl;
   template ( X.run (
+
+    complist_caption "List";
+
     complist_pills me;
-    tnest (
-      push
+
+    push_back( tnest (
+
+      push_back_xml
       <xml><tr>
         <th>ID</th><th>Name</th><th/><th/>
       </tr></xml>;
@@ -648,14 +666,15 @@ and clist_view {} : transaction page =
       X.query_
       (SELECT * FROM compet AS T)
       (fn fs =>
-        push
-          <xml><tr>
-            <td>{[fs.T.Id]}</td>
-            <td>{[fs.T.CName]}</td>
-            <td> <a link={compet_register fs.T.Id}>[Details]</a> </td>
-            <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
-          </tr></xml>)
-    )
+        push_back_xml
+        <xml><tr>
+          <td>{[fs.T.Id]}</td>
+          <td>{[fs.T.CName]}</td>
+          <td> <a link={compet_register fs.T.Id}>[Details]</a> </td>
+          <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
+        </tr></xml>
+      )
+    ))
   ))
 
 and users_list {} : transaction page =
@@ -734,7 +753,7 @@ and users_search (cid:int) (s:string) : transaction (list (record user)) =
     WHERE U.Id = SS.I AND SS.N = 0);
   return (List.mp (fn x => x.U) fs)
 
-and main {} : transaction page = redirect (url (clist_view {}))
+and main {} : transaction page = redirect (url (complist_view {}))
 
 and about {} : transaction page = return <xml><body>About page</body></xml>
 
@@ -754,6 +773,6 @@ and init {} : transaction page =
   compet_register_ c2 u1;
   compet_register_ c2 u4;
   compet_register_ c2 u5;
-  redirect (url (clist_view {}))
+  redirect (url (complist_view {}))
 
 
