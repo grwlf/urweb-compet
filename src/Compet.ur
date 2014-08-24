@@ -38,6 +38,9 @@ fun checked [x ::: Type] (l : list (source bool * x)) : transaction (list x) =
 
 (** XMLGen-based *)
 
+fun idnest [a ::: Type] (nb : X.state xbody a) : X.state xbody a =
+  nest (fn x =><xml>{x}</xml>) nb
+
 fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody a =
   nest (fn x =>
     <xml>
@@ -378,8 +381,10 @@ and compet_targets cid =
 
       i <- info_success "";
 
-      ss <- tnest (
-        push
+      idnest (
+
+        ss <- tnest (
+          push
           <xml><tr>
             <th></th>
             <th>ID</th>
@@ -387,47 +392,57 @@ and compet_targets cid =
             <th>Target</th>
           </tr></xml>;
 
-        X.query (
+          X.query
+          (
             SELECT *
             FROM compet_users AS CU
             WHERE CU.CId = {[cid]}
             ORDER BY CU.UId
           )
-
           []
-
           (fn fs ss =>
             s <- X.source True;
             e <- X.source fs.CU.Target;
+
             push
-              <xml><tr>
-                <td><ccheckbox source={s}/></td>
-                <td>{[fs.CU.UId]}</td>
-                <td>{[fs.CU.UName]}</td>
-                <td><ctextbox source={e}/></td>
-              </tr></xml>;
+            <xml><tr>
+              <td><ccheckbox source={s}/></td>
+              <td>{[fs.CU.UId]}</td>
+              <td>{[fs.CU.UName]}</td>
+              <td><ctextbox source={e}/></td>
+            </tr></xml>;
+
             return ((s,(fs.CU.UId,e)) :: ss)
           )
-      );
+        );
 
-      push <xml>
-        <button value="Assign selected" onclick={fn _ => 
-          cs <- checked ss;
-          P.forM_ cs (fn (id, e) => set e "blabla");
-          return {}
+        ntargets <- X.source "10";
+        push <xml>Number of targets <ctextbox source={ntargets}/><br/></xml>;
+
+        letters <- X.source "ABCD";
+        push <xml>Target letters <ctextbox source={letters}/><br/></xml>;
+
+        push
+        <xml>
+          <button value="Assign selected" onclick={fn _ => 
+            cs <- checked ss;
+            P.forM_ cs (fn (id, e) => set e "blabla");
+            return {}
+          }/>
+        </xml>;
+
+        push
+        <xml>
+          <button value="Apply" onclick={fn _ => 
+            vs <- P.forM ss (fn (_,(id,e)) => v <- get e; return (id,v));
+            rpc(compet_targets_apply vs);
+            set i "Success";
+            return {}
           } />
         </xml>;
 
-      push <xml>
-        <button value="Apply" onclick={fn _ => 
-          vs <- P.forM ss (fn (_,(id,e)) => v <- get e; return (id,v));
-          rpc(compet_targets_apply vs);
-          set i "Success";
-          return {}
-          } />
-        </xml>;
-
-      return {}
+        return {}
+      )
     ))
   where
     fun compet_targets_apply lst =
