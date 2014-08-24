@@ -285,7 +285,7 @@ fun template (mb:transaction xbody) : transaction page =
 
     val s = {
       Title = "Competitions",
-      Main = url(compet_list {}),
+      Main = url(clist_view {}),
       Users = url(users_list {}),
       About = url(about {}),
       Init = url(init {})
@@ -471,7 +471,7 @@ and compet_admin cid =
 
     fun compet_delete _ : transaction page =
       dml(DELETE FROM compet WHERE Id = {[cid]});
-      redirect (url (compet_list {}))
+      redirect (url (clist_view {}))
   end
 
 and compet_details2 cid =
@@ -592,40 +592,56 @@ and compet_register cid =
   where
   end
 
-and compet_new fs = 
-  _ <- compet_new_ fs;
-  redirect ( url (compet_list {}))
+and complist_pills (me:url) = pills me (fn pill =>
+  pill (url(clist_view {})) <xml>List</xml>;
+  pill (url(clist_add {})) <xml>Add</xml>;
+  return {})
 
-and compet_list {} : transaction page = 
-  template (
-    t <- mktab (SELECT * FROM compet AS T) (
-        <xml>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th></th>
-            <th></th>
-          </tr>
-        </xml>)
+and clist_add {} =
+  let
+    me <- currentUrl;
+    template ( X.run (
 
-        (fn fs =>
+      complist_pills me;
+
+      push
+      <xml>
+        {mkrow (mkform
         <xml>
-          <tr>
+          {formgroup [#CName] "Name"}
+          <submit action={compet_new} value="Create"/>
+        </xml>
+        )}
+      </xml>
+    ))
+  where
+    fun compet_new fs = 
+      _ <- compet_new_ fs;
+      redirect ( url (clist_view {}))
+  end
+
+and clist_view {} : transaction page = 
+  me <- currentUrl;
+  template ( X.run (
+    complist_pills me;
+    tnest (
+      push
+      <xml><tr>
+        <th>ID</th><th>Name</th><th/><th/>
+      </tr></xml>;
+
+      X.query_
+      (SELECT * FROM compet AS T)
+      (fn fs =>
+        push
+          <xml><tr>
             <td>{[fs.T.Id]}</td>
             <td>{[fs.T.CName]}</td>
             <td> <a link={compet_register fs.T.Id}>[Details]</a> </td>
             <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
-          </tr>
-        </xml>);
-    return
-    <xml>
-      {mkrow t}
-      {mkrow (mkform
-      <xml>
-        {formgroup [#CName] "Name"}
-        <submit action={compet_new} value="Create"/>
-      </xml>)}
-    </xml>)
+          </tr></xml>)
+    )
+  ))
 
 and users_list {} : transaction page =
   let
@@ -703,7 +719,7 @@ and users_search (cid:int) (s:string) : transaction (list (record user)) =
     WHERE U.Id = SS.I AND SS.N = 0);
   return (List.mp (fn x => x.U) fs)
 
-and main {} : transaction page = redirect (url (compet_list {}))
+and main {} : transaction page = redirect (url (clist_view {}))
 
 and about {} : transaction page = return <xml><body>About page</body></xml>
 
@@ -723,6 +739,6 @@ and init {} : transaction page =
   compet_register_ c2 u1;
   compet_register_ c2 u4;
   compet_register_ c2 u5;
-  redirect (url (compet_list {}))
+  redirect (url (clist_view {}))
 
 
