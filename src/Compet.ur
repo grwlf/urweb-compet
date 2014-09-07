@@ -183,13 +183,13 @@ fun hidingpanel (x:xbody) : transaction xbody =
 
 *)
 
-con user_base = [SName = string, Bow = string , Birth = string, Club = string, Rank = string]
+con sportsmen_base = [SName = string, Bow = string , Birth = string, Club = string, Rank = string]
 
-con user = ([Id = int] ++ user_base)
+con sportsmen = ([Id = int] ++ sportsmen_base)
 
-val show_user : show (record user) = mkShow (fn s => (show s.Id) ^ " " ^ (show s.SName))
+val show_sportsmen : show (record sportsmen) = mkShow (fn s => (show s.Id) ^ " " ^ (show s.SName))
 
-table sportsmen : (user)
+table sportsmen : (sportsmen)
   PRIMARY KEY  Id
 
 sequence sportsmenSeq
@@ -202,7 +202,7 @@ table compet : compet
 sequence competSeq
 
 
-table compet_sportsmen : ([CId = int, SId = int] ++ user_base ++ [Target = string])
+table compet_sportsmen : ([CId = int, SId = int] ++ sportsmen_base ++ [Target = string])
   PRIMARY KEY (CId, SId),
   CONSTRAINT CS_S FOREIGN KEY (SId) REFERENCES sportsmen (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CS_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
@@ -756,7 +756,7 @@ and sportsmen_list {} : transaction page =
         <xml>
           {mkform
           <xml>
-            <submit action={sportsmen_delete} value="Delete user"/>
+            <submit action={sportsmen_delete} value="Delete sportsmen"/>
           </xml>}
         </xml>)
       where
@@ -766,7 +766,7 @@ and sportsmen_list {} : transaction page =
       end
   end
 
-and sportsmen_search (cid:int) (s:string) : transaction (list (record user)) =
+and sportsmen_search (cid:int) (s:string) : transaction (list (record sportsmen)) =
   fs <- queryL(
     SELECT * FROM sportsmen AS U,
       (SELECT U.Id AS I, COUNT(CS.CId) AS N
