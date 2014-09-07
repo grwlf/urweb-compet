@@ -189,10 +189,10 @@ con user = ([Id = int] ++ user_base)
 
 val show_user : show (record user) = mkShow (fn s => (show s.Id) ^ " " ^ (show s.UName))
 
-table users : (user)
+table sportsmen : (user)
   PRIMARY KEY  Id
 
-sequence usersSeq
+sequence sportsmenSeq
 
 con compet = [Id = int, CName = string, Hide = bool]
 
@@ -202,14 +202,14 @@ table compet : compet
 sequence competSeq
 
 
-table compet_users : ([CId = int, UId = int] ++ user_base ++ [Target = string])
+table compet_sportsmen : ([CId = int, UId = int] ++ user_base ++ [Target = string])
   PRIMARY KEY (CId, UId),
-  CONSTRAINT CU_U FOREIGN KEY (UId) REFERENCES users (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT CU_U FOREIGN KEY (UId) REFERENCES sportsmen (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CU_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
 table scores : ([CId = int, UId = int, Round = int, Score = int])
   PRIMARY KEY (CId, UId, Round),
-  CONSTRAINT S_U FOREIGN KEY (UId) REFERENCES users (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT S_U FOREIGN KEY (UId) REFERENCES sportsmen (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT S_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
 fun compet_new_ fs = 
@@ -217,15 +217,15 @@ fun compet_new_ fs =
   dml(INSERT INTO compet(Id,CName,Hide) VALUES ({[i]}, {[fs.CName]}, {[False]}));
   return i
 
-fun users_new_ fs =
-  i <- nextval usersSeq;
-  dml(INSERT INTO users (Id,UName,Bow,Birth,Rank,Club)
+fun sportsmen_new_ fs =
+  i <- nextval sportsmenSeq;
+  dml(INSERT INTO sportsmen (Id,UName,Bow,Birth,Rank,Club)
       VALUES ({[i]}, {[fs.UName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
   return i
 
 fun compet_register_ cid uid : transaction {} =
-  u <- oneRow1(SELECT * FROM users AS U WHERE U.Id = {[uid]});
-  dml(INSERT INTO compet_users (CId, UId, UName, Bow, Birth, Club, Rank, Target)
+  u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[uid]});
+  dml(INSERT INTO compet_sportsmen (CId, UId, UName, Bow, Birth, Club, Rank, Target)
       VALUES ({[cid]}, {[u.Id]}, {[u.UName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
   dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
   dml(INSERT INTO scores (CId, UId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
@@ -262,7 +262,7 @@ fun template (mb:transaction xbody) : transaction page =
               <div class={cl (B.collapse :: B.navbar_collapse :: [])}>
                 <ul class={cl (B.nav :: B.navbar_nav :: [])}>
                   {active s.Main "Competitions"}
-                  {active s.Users "Users"}
+                  {active s.Sportsmen "Sportsmen"}
                   {active s.Init "Init DB"}
                 </ul>
               </div>
@@ -291,7 +291,7 @@ fun template (mb:transaction xbody) : transaction page =
     val s = {
       Title = "Competitions",
       Main = url(complist_view {}),
-      Users = url(users_list {}),
+      Sportsmen = url(sportsmen_list {}),
       About = url(about {}),
       Init = url(init {})
       }
@@ -311,7 +311,7 @@ fun template (mb:transaction xbody) : transaction page =
 and registered_details (cid:int) (uid:int) : transaction page =
   let
     template  (
-      fs <- oneRow1(SELECT * FROM compet_users AS U WHERE U.UId = {[uid]} AND U.CId = {[cid]});
+      fs <- oneRow1(SELECT * FROM compet_sportsmen AS U WHERE U.UId = {[uid]} AND U.CId = {[cid]});
       return <xml>
         <h3>{[fs.UName]}</h3>
         <p>
@@ -321,7 +321,7 @@ and registered_details (cid:int) (uid:int) : transaction page =
             {formgroup_def [#Birth] fs "Birth"}
             {formgroup_def [#Club] fs "Club"}
             {formgroup_def [#Rank] fs "Rank"}
-            {formgroup2 <xml><checkbox{#Propagate} checked={False}/></xml> "Also update users"}
+            {formgroup2 <xml><checkbox{#Propagate} checked={False}/></xml> "Also update sportsmen"}
             <submit action={registered_update} value="Update"/>
           </xml>}
         </p>
@@ -336,21 +336,21 @@ and registered_details (cid:int) (uid:int) : transaction page =
     )
   where
     fun registered_update frm =
-      dml(UPDATE compet_users
+      dml(UPDATE compet_sportsmen
           SET UName = {[frm.UName]}, Birth = {[frm.Birth]},
               Club = {[frm.Club]}, Rank = {[frm.Rank]}
           WHERE CId = {[cid]} AND UId = {[uid]});
       (case frm.Propagate of
        |False => return {}
        |True =>
-         dml(UPDATE users
+         dml(UPDATE sportsmen
            SET UName = {[frm.UName]}, Birth = {[frm.Birth]},
                Club = {[frm.Club]}, Rank = {[frm.Rank]}
            WHERE Id = {[uid]}));
       redirect( url(registered_details cid uid) )
 
     fun registered_unregister _ =
-      dml(DELETE FROM compet_users WHERE CId = {[cid]} AND UId = {[uid]});
+      dml(DELETE FROM compet_sportsmen WHERE CId = {[cid]} AND UId = {[uid]});
       dml(DELETE FROM scores WHERE CId = {[cid]} AND UId = {[uid]});
       redirect( url (compet_register cid) )
   end
@@ -396,7 +396,7 @@ and compet_targets cid =
           P.ap List.rev (X.query
           (
             SELECT *
-            FROM compet_users AS CU
+            FROM compet_sportsmen AS CU
             WHERE CU.CId = {[cid]}
             ORDER BY CU.UId
           )
@@ -468,7 +468,7 @@ and compet_targets cid =
   where
     fun compet_targets_apply lst =
       P.forM_ lst (fn (id,v) =>
-        dml(UPDATE compet_users SET Target = {[v]} WHERE CId = {[cid]} AND UId = {[id]}))
+        dml(UPDATE compet_sportsmen SET Target = {[v]} WHERE CId = {[cid]} AND UId = {[id]}))
   end
 
 and compet_admin cid =
@@ -535,7 +535,7 @@ and compet_details2 cid =
 
         X.query_ (
           SELECT *
-          FROM compet_users AS CU,
+          FROM compet_sportsmen AS CU,
                scores AS S0,
                scores AS S1
           WHERE
@@ -587,7 +587,7 @@ and compet_register cid =
           <th></th>
         </tr></xml>;
 
-        X.query_ (SELECT * FROM compet_users AS CU WHERE CU.CId = {[cid]})
+        X.query_ (SELECT * FROM compet_sportsmen AS CU WHERE CU.CId = {[cid]})
         (fn fs =>
           push_back_xml
           <xml><tr>
@@ -609,7 +609,7 @@ and compet_register cid =
         <ctextbox source={ss}/>
         <button value="Search" onclick={fn _ =>
           v <- get ss;
-          ls <- rpc (users_search cid v);
+          ls <- rpc (sportsmen_search cid v);
           set ss2 ls
         }/>
         <dyn signal={
@@ -685,7 +685,7 @@ and complist_view {} : transaction page =
       (SELECT * FROM compet AS T)
       (fn fs =>
 
-        c <- X.oneRow (SELECT COUNT( * ) AS N FROM compet_users AS CU WHERE CU.CId = {[fs.T.Id]});
+        c <- X.oneRow (SELECT COUNT( * ) AS N FROM compet_sportsmen AS CU WHERE CU.CId = {[fs.T.Id]});
 
         push_back_xml
         <xml><tr>
@@ -699,11 +699,11 @@ and complist_view {} : transaction page =
     ))
   ))
 
-and users_list {} : transaction page =
+and sportsmen_list {} : transaction page =
   let
     template (
 
-      t <- mktab (SELECT * FROM users AS T) (
+      t <- mktab (SELECT * FROM sportsmen AS T) (
           <xml>
             <tr>
               <th>ID</th>
@@ -724,7 +724,7 @@ and users_list {} : transaction page =
               <td>{[fs.T.Bow]}</td>
               <td>{[fs.T.Rank]}</td>
               <td>{[fs.T.Club]}</td>
-              <td> <a link={users_detail fs.T.Id}>[Details]</a> </td>
+              <td> <a link={sportsmen_detail fs.T.Id}>[Details]</a> </td>
             </tr>
           </xml>);
 
@@ -739,38 +739,38 @@ and users_list {} : transaction page =
             {formgroup [#Bow] "Bow"}
             {formgroup [#Rank] "Rank"}
             {formgroup [#Club] "Club"}
-            <submit action={users_new} value="Create"/>
+            <submit action={sportsmen_new} value="Create"/>
           </xml>)}
 
         </xml>)
 
   where
 
-    fun users_new fs : transaction page = 
-      _ <- users_new_ fs;
-      redirect ( url (users_list {}))
+    fun sportsmen_new fs : transaction page = 
+      _ <- sportsmen_new_ fs;
+      redirect ( url (sportsmen_list {}))
 
-    fun users_detail uid : transaction page = 
+    fun sportsmen_detail uid : transaction page = 
       let
         template (return
         <xml>
           {mkform
           <xml>
-            <submit action={users_delete} value="Delete user"/>
+            <submit action={sportsmen_delete} value="Delete user"/>
           </xml>}
         </xml>)
       where
-        fun users_delete _ : transaction page =
-          dml(DELETE FROM users WHERE Id = {[uid]});
-          redirect ( url (users_list {}))
+        fun sportsmen_delete _ : transaction page =
+          dml(DELETE FROM sportsmen WHERE Id = {[uid]});
+          redirect ( url (sportsmen_list {}))
       end
   end
 
-and users_search (cid:int) (s:string) : transaction (list (record user)) =
+and sportsmen_search (cid:int) (s:string) : transaction (list (record user)) =
   fs <- queryL(
-    SELECT * FROM users AS U,
+    SELECT * FROM sportsmen AS U,
       (SELECT U.Id AS I, COUNT(CU.CId) AS N
-       FROM users AS U LEFT JOIN compet_users AS CU ON U.Id = CU.UId AND CU.CId = {[cid]}
+       FROM sportsmen AS U LEFT JOIN compet_sportsmen AS CU ON U.Id = CU.UId AND CU.CId = {[cid]}
        WHERE U.UName LIKE {["%" ^ s ^ "%"]} GROUP BY U.Id) AS SS
     WHERE U.Id = SS.I AND SS.N = 0);
   return (List.mp (fn x => x.U) fs)
@@ -781,14 +781,14 @@ and about {} : transaction page = return <xml><body>About page</body></xml>
 
 and init {} : transaction page =
   dml(DELETE FROM compet WHERE Id>0);
-  dml(DELETE FROM users WHERE Id>0);
+  dml(DELETE FROM sportsmen WHERE Id>0);
   c1 <- compet_new_ {CName="Competition 1"};
   c2 <- compet_new_ {CName="Competition 2"};
-  u1 <- users_new_ {UName="Иванов Пётр", Bow="Классика", Birth="03.04.1998", Rank="1", Club="СДЮШОР8"};
-  u2 <- users_new_ {UName="Степанов Степан", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
-  u3 <- users_new_ {UName="Петров Иван", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
-  u4 <- users_new_ {UName="Дмитриев Дмитрий", Bow="Блок", Birth="03.04.1978", Rank="1", Club="СДЮШОР8"};
-  u5 <- users_new_ {UName="Петров Пётр", Bow="Блок", Birth="03.04.1988", Rank="2", Club="СДЮШОР8"};
+  u1 <- sportsmen_new_ {UName="Иванов Пётр", Bow="Классика", Birth="03.04.1998", Rank="1", Club="СДЮШОР8"};
+  u2 <- sportsmen_new_ {UName="Степанов Степан", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
+  u3 <- sportsmen_new_ {UName="Петров Иван", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
+  u4 <- sportsmen_new_ {UName="Дмитриев Дмитрий", Bow="Блок", Birth="03.04.1978", Rank="1", Club="СДЮШОР8"};
+  u5 <- sportsmen_new_ {UName="Петров Пётр", Bow="Блок", Birth="03.04.1988", Rank="2", Club="СДЮШОР8"};
   compet_register_ c1 u1;
   compet_register_ c1 u2;
   compet_register_ c1 u3;
