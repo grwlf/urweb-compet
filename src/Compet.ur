@@ -183,7 +183,7 @@ fun hidingpanel (x:xbody) : transaction xbody =
 
 *)
 
-con sportsmen_base = [SName = string, Bow = string , Birth = string, Club = string, Rank = string]
+con sportsmen_base = [SName = string, Sex = string, Bow = string , Birth = string, Club = string, Rank = string]
 
 con sportsmen = ([Id = int] ++ sportsmen_base)
 
@@ -219,14 +219,14 @@ fun compet_new_ fs =
 
 fun sportsmen_new_ fs =
   i <- nextval sportsmenSeq;
-  dml(INSERT INTO sportsmen (Id,SName,Bow,Birth,Rank,Club)
-      VALUES ({[i]}, {[fs.SName]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
+  dml(INSERT INTO sportsmen (Id,SName,Sex,Bow,Birth,Rank,Club)
+      VALUES ({[i]}, {[fs.SName]}, {[fs.Sex]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
   return i
 
 fun compet_register_ cid uid : transaction {} =
   u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[uid]});
-  dml(INSERT INTO compet_sportsmen (CId, SId, SName, Bow, Birth, Club, Rank, Target)
-      VALUES ({[cid]}, {[u.Id]}, {[u.SName]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
+  dml(INSERT INTO compet_sportsmen (CId, SId, SName, Sex, Bow, Birth, Club, Rank, Target)
+      VALUES ({[cid]}, {[u.Id]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
   dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
   dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
   return {}
@@ -318,6 +318,7 @@ and registered_details (cid:int) (uid:int) : transaction page =
           <h4>Update</h4>
           {mkform <xml>
             {formgroup_def [#SName] fs "Name"}
+            {formgroup_def [#Sex] fs "Sex"}
             {formgroup_def [#Birth] fs "Birth"}
             {formgroup_def [#Club] fs "Club"}
             {formgroup_def [#Rank] fs "Rank"}
@@ -337,14 +338,14 @@ and registered_details (cid:int) (uid:int) : transaction page =
   where
     fun registered_update frm =
       dml(UPDATE compet_sportsmen
-          SET SName = {[frm.SName]}, Birth = {[frm.Birth]},
+          SET SName = {[frm.SName]}, Sex = {[frm.Sex]}, Birth = {[frm.Birth]},
               Club = {[frm.Club]}, Rank = {[frm.Rank]}
           WHERE CId = {[cid]} AND SId = {[uid]});
       (case frm.Propagate of
        |False => return {}
        |True =>
          dml(UPDATE sportsmen
-           SET SName = {[frm.SName]}, Birth = {[frm.Birth]},
+           SET SName = {[frm.SName]}, Sex = {[frm.Sex]}, Birth = {[frm.Birth]},
                Club = {[frm.Club]}, Rank = {[frm.Rank]}
            WHERE Id = {[uid]}));
       redirect( url(registered_details cid uid) )
@@ -708,6 +709,7 @@ and sportsmen_list {} : transaction page =
             <tr>
               <th>ID</th>
               <th>Name</th>
+              <th>Sex</th>
               <th>Birth</th>
               <th>Bow</th>
               <th>Rank</th>
@@ -720,6 +722,7 @@ and sportsmen_list {} : transaction page =
             <tr>
               <td>{[fs.T.Id]}</td>
               <td>{[fs.T.SName]}</td>
+              <td>{[fs.T.Sex]}</td>
               <td>{[fs.T.Birth]}</td>
               <td>{[fs.T.Bow]}</td>
               <td>{[fs.T.Rank]}</td>
@@ -735,6 +738,7 @@ and sportsmen_list {} : transaction page =
           {mkrow (mkform
           <xml>
             {formgroup [#SName] "SName"}
+            {formgroup [#Sex] "Sex"}
             {formgroup [#Birth] "Birth"}
             {formgroup [#Bow] "Bow"}
             {formgroup [#Rank] "Rank"}
@@ -784,11 +788,11 @@ and init {} : transaction page =
   dml(DELETE FROM sportsmen WHERE Id>0);
   c1 <- compet_new_ {CName="Competition 1"};
   c2 <- compet_new_ {CName="Competition 2"};
-  u1 <- sportsmen_new_ {SName="Иванов Пётр", Bow="Классика", Birth="03.04.1998", Rank="1", Club="СДЮШОР8"};
-  u2 <- sportsmen_new_ {SName="Степанов Степан", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
-  u3 <- sportsmen_new_ {SName="Петров Иван", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
-  u4 <- sportsmen_new_ {SName="Дмитриев Дмитрий", Bow="Блок", Birth="03.04.1978", Rank="1", Club="СДЮШОР8"};
-  u5 <- sportsmen_new_ {SName="Петров Пётр", Bow="Блок", Birth="03.04.1988", Rank="2", Club="СДЮШОР8"};
+  u1 <- sportsmen_new_ {SName="Иванов Пётр", Sex="m", Bow="Классика", Birth="03.04.1998", Rank="1", Club="СДЮШОР8"};
+  u2 <- sportsmen_new_ {SName="Степанов Степан", Sex="m", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
+  u3 <- sportsmen_new_ {SName="Петров Иван", Sex="m", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
+  u4 <- sportsmen_new_ {SName="Дмитриев Дмитрий", Sex="m", Bow="Блок", Birth="03.04.1978", Rank="1", Club="СДЮШОР8"};
+  u5 <- sportsmen_new_ {SName="Петров Пётр", Sex="m", Bow="Блок", Birth="03.04.1988", Rank="2", Club="СДЮШОР8"};
   compet_register_ c1 u1;
   compet_register_ c1 u2;
   compet_register_ c1 u3;
