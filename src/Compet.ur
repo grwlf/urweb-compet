@@ -209,6 +209,22 @@ table compet : compet
 
 sequence competSeq
 
+con group = [GName = string]
+
+table groups : ([Id = int] ++ group)
+  PRIMARY KEY (Id)
+
+sequence groupSeq
+
+fun group_new_ (gr:record group) : transaction int =
+  i<-nextval groupSeq;
+  dml(INSERT INTO groups (Id, GName) VALUES ({[i]}, {[gr.GName]}));
+  return i
+
+table compet_groups : ([CId = int, GId = int])
+  PRIMARY KEY (CId, GId),
+  CONSTRAINT CG_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT CG_G FOREIGN KEY (GId) REFERENCES groups (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
 table compet_sportsmen : ([CId = int, SId = int] ++ sportsmen_base ++ [Target = string])
   PRIMARY KEY (CId, SId),
