@@ -216,7 +216,7 @@ table groups : ([Id = int] ++ group)
 
 sequence groupSeq
 
-fun group_new_ (gr:record group) : transaction int =
+fun groups_new_ (gr:record group) : transaction int =
   i<-nextval groupSeq;
   dml(INSERT INTO groups (Id, GName) VALUES ({[i]}, {[gr.GName]}));
   return i
@@ -381,6 +381,7 @@ and registered_details (cid:int) (uid:int) : transaction page =
   end
 
 and compet_pills (me:url) cid = pills me (fn pill =>
+  pill (url(compet_grps cid)) <xml>Groups</xml>;
   pill (url(compet_register cid)) <xml>Registration</xml>;
   pill (url(compet_targets cid)) <xml>Targets</xml>;
   pill (url(compet_details2 cid)) <xml>Scores</xml>;
@@ -392,6 +393,56 @@ and compet_caption cid cap =
   push_back_xml <xml><h2>{[fs.CName]}</h2></xml>;
   push_back_xml <xml><h3>{[cap]}</h3></xml>;
   return fs
+
+and compet_grps cid =
+  let
+    me <- currentUrl;
+    template ( X.run (
+      
+      compet_caption_ cid "Groups";
+
+      compet_pills me cid;
+
+      push_back ( tnest (
+
+        push_back_xml
+        <xml><tr>
+          <th>Name</th>
+        </tr></xml>;
+
+        (X.query_
+        (
+          SELECT *
+          FROM compet_groups AS CG, groups AS G
+          WHERE G.Id = CG.GId AND CG.CId = {[cid]}
+        )
+        (fn fs =>
+          push_back_xml
+          <xml><tr>
+            <td>{[fs.G.GName]}</td>
+          </tr></xml>;
+          return {}
+        ))
+      ));
+
+      push_back_xml
+        <xml>
+          <p>
+            <h3>New group</h3>
+            {mkform <xml>
+              {formgroup [#GName] "Group name"}
+              <submit action={compet_groups_add} value="Add"/>
+              </xml>}
+          </p>
+        </xml>
+    ))
+  where
+    fun compet_groups_add frm : transaction page =
+      g <- oneOrNoRows(SELECT * FROM groups AS G WHERE G.GName = {[frm.GName]} ORDER BY G.GName LIMIT 1);
+      gid <- (case g of |Some g => return g.G.Id |None => groups_new_ frm);
+      dml(INSERT INTO compet_groups (CId, GId) VALUES ({[cid]}, {[gid]}));
+      redirect (url (compet_grps cid))
+  end
 
 and compet_caption_ cid cap =
   _ <- compet_caption cid cap;
@@ -810,6 +861,9 @@ and about {} : transaction page = return <xml><body>About page</body></xml>
 and init {} : transaction page =
   dml(DELETE FROM compet WHERE Id>0);
   dml(DELETE FROM sportsmen WHERE Id>0);
+  dml(DELETE FROM groups WHERE Id>0);
+  g1 <- groups_new_ {GName="Мужчины"};
+  g2 <- groups_new_ {GName="Женщины"};
   c1 <- compet_new_ {CName="Competition 1"};
   c2 <- compet_new_ {CName="Competition 2"};
   u1 <- sportsmen_new_ {SName="Иванов Пётр", Sex="М", Bow="Классика", Birth="03.04.1998", Rank="1", Club="СДЮШОР8"};
