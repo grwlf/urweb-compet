@@ -407,21 +407,35 @@ and compet_grps cid =
 
         push_back_xml
         <xml><tr>
+          <th></th>
           <th>Name</th>
         </tr></xml>;
 
         (X.query_
         (
           SELECT *
-          FROM compet_groups AS CG, groups AS G
-          WHERE G.Id = CG.GId AND CG.CId = {[cid]}
+          FROM groups AS G LEFT OUTER JOIN compet_groups AS CG ON CG.GId = G.Id
         )
         (fn fs =>
-          push_back_xml
-          <xml><tr>
-            <td>{[fs.G.GName]}</td>
-          </tr></xml>;
+          let
+            val marked =
+              push_back_xml
+              <xml><tr>
+                <td>X</td>
+                <td>{[fs.G.GName]}</td>
+              </tr></xml>
+            val unmarked =
+              push_back_xml
+              <xml><tr>
+                <td></td>
+                <td>{[fs.G.GName]}</td>
+              </tr></xml>
+          in
+          (case fs.CG.CId of
+            |Some x => if x = cid then marked else unmarked
+            |_ => unmarked);
           return {}
+          end
         ))
       ));
 
