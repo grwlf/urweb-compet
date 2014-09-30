@@ -34,6 +34,8 @@ style visible
 
 *) 
 
+fun modify s f = l <- get s; set s (f l)
+
 fun checked [x ::: Type] (l : list (source bool * x)) : transaction (list x) =
   List.mapPartialM (fn (s,r) =>
     v <- get s;
@@ -53,19 +55,20 @@ fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody (xbody * a) =
 
 fun info_success (s:string) : X.state xbody (source string) =
   let
+    me <- lift currentUrl;
     s <- X.source s;
     push_back_xml
     <xml><p>
       <dyn signal={v <- signal s;
         case v of
-          |"" => return <xml><div class={invisible}>{label "OK"}</div></xml>
-          |_=> return <xml>{label v}</xml>
+          |"" => return <xml><div class={invisible}>{label me "OK"}</div></xml>
+          |_=> return <xml>{label me v}</xml>
         }/>
     </p></xml>;
     return s
 
   where
-    fun label v = 
+    fun label me v = 
       <xml>
         <div class={cl (B.alert :: B.alert_success :: B.alert_dismissable :: [])} role="alert">
           <button value="" class={B.close} data={data "dismiss" "alert"} onclick={fn _ => return {}}>
@@ -75,6 +78,7 @@ fun info_success (s:string) : X.state xbody (source string) =
             </span>
           </button>
           {[v]}
+          <a href={me}>Reload</a> current page to return to actual state.
         </div>
       </xml>
   end
@@ -403,6 +407,10 @@ and compet_grps cid =
 
       compet_pills me cid;
 
+      i <- info_success "";
+
+      ch <- lift (source []);
+
       push_back ( tnest (
 
         push_back_xml
@@ -411,47 +419,49 @@ and compet_grps cid =
           <th>Name</th>
         </tr></xml>;
 
-        (X.query_
+        X.query_
         (
           SELECT *
           FROM groups AS G LEFT OUTER JOIN compet_groups AS CG ON CG.GId = G.Id
         )
         (fn fs =>
-          let
-            val marked =
-              push_back_xml
-              <xml><tr>
-                <td>X</td>
-                <td>{[fs.G.GName]}</td>
-              </tr></xml>
-            val unmarked =
-              push_back_xml
-              <xml><tr>
-                <td></td>
-                <td>{[fs.G.GName]}</td>
-              </tr></xml>
-          in
-          (case fs.CG.CId of
-            |Some x => if x = cid then marked else unmarked
-            |_ => unmarked);
+          s <- X.source (case fs.CG.CId of |Some x => if x = cid then True else False |_=>False);
+
+          push_back_xml
+          <xml><tr>
+            <td><ccheckbox source={s} onchange={modify ch (P.add1 fs.G.Id)}/></td>
+            <td>{[fs.G.GName]}</td>
+          </tr></xml>;
           return {}
-          end
-        ))
+        )
       ));
 
       push_back_xml
         <xml>
           <p>
-            <h3>New group</h3>
+            <h3>Update</h3>
+            <button value="Apply" onclick={fn _ =>
+              l <- get ch;
+              r <- tryRpc(compet_groups_add l);
+              case r of
+                |Some _ => set i ""
+                |None => set i "Error"
+              }/>
+
+            <h3>Add new group</h3>
             {mkform <xml>
               {formgroup [#GName] "Group name"}
-              <submit action={compet_groups_add} value="Add"/>
+              <submit action={compet_groups_new} value="New group"/>
               </xml>}
           </p>
         </xml>
     ))
   where
-    fun compet_groups_add frm : transaction page =
+    fun compet_groups_add (gs:list int) : transaction unit =
+      P.forM_ gs (fn gid =>
+        dml(INSERT INTO compet_groups (CId, GId) VALUES ({[cid]}, {[gid]})))
+
+    fun compet_groups_new frm : transaction page =
       g <- oneOrNoRows(SELECT * FROM groups AS G WHERE G.GName = {[frm.GName]} ORDER BY G.GName LIMIT 1);
       gid <- (case g of |Some g => return g.G.Id |None => groups_new_ frm);
       dml(INSERT INTO compet_groups (CId, GId) VALUES ({[cid]}, {[gid]}));
@@ -782,7 +792,7 @@ and complist_view {} : transaction page =
           <td>{[fs.T.Id]}</td>
           <td>{[fs.T.CName]}</td>
           <td>{[c.N]}</td>
-          <td> <a link={compet_register fs.T.Id}>[Details]</a> </td>
+          <td> <a link={compet_grps fs.T.Id}>[Details]</a> </td>
           <td> <a link={compet_details2 fs.T.Id}>[Scores]</a> </td>
         </tr></xml>
       )
