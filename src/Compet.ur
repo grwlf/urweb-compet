@@ -53,24 +53,27 @@ fun tnest [a ::: Type] (nb : X.state xtable a) : X.state xbody (xbody * a) =
       </table>
     </xml>) nb
 
-fun info_success (s:string) : X.state xbody (source string) =
+datatype osd = Hidden | Error of string | Notice of string
+
+fun mkosd {} : X.state xbody (source osd) =
   let
     me <- lift currentUrl;
-    s <- X.source s;
+    s <- X.source Hidden;
     push_back_xml
     <xml><p>
       <dyn signal={v <- signal s;
         case v of
-          |"" => return <xml><div class={invisible}>{label me "OK"}</div></xml>
-          |_=> return <xml>{label me v}</xml>
+          |Hidden => return <xml></xml>
+          |Error s => return <xml>{label me B.alert_danger s}</xml>
+          |Notice s => return <xml>{label me B.alert_success s}</xml>
         }/>
     </p></xml>;
     return s
 
   where
-    fun label me v = 
+    fun label me css v = 
       <xml>
-        <div class={cl (B.alert :: B.alert_success :: B.alert_dismissable :: [])} role="alert">
+        <div class={cl (B.alert :: css :: B.alert_dismissable :: [])} role="alert">
           <button value="" class={B.close} data={data "dismiss" "alert"} onclick={fn _ => return {}}>
             <span data={aria "hidden" "true"}>&times;</span>
             <span class={B.sr_only}>
@@ -407,7 +410,7 @@ and compet_grps cid =
 
       compet_pills me cid;
 
-      i <- info_success "";
+      i <- mkosd {};
 
       ch <- lift (source []);
 
@@ -444,8 +447,8 @@ and compet_grps cid =
               l <- get ch;
               r <- tryRpc(compet_groups_add l);
               case r of
-                |Some _ => set i ""
-                |None => set i "Error"
+                |Some _ => set i Hidden
+                |None => set i (Error "Failed to update the database")
               }/>
 
             <h3>Add new group</h3>
@@ -481,7 +484,7 @@ and compet_targets cid =
 
       compet_pills me cid;
 
-      i <- info_success "";
+      i <- mkosd {};
 
       push_back ( nest P.id (
         ss <- push_back( tnest (
@@ -558,7 +561,7 @@ and compet_targets cid =
             <button value="Apply" onclick={fn _ => 
               vs <- P.forM ss (fn (_,(id,e)) => v <- get e; return (id,v));
               rpc(compet_targets_apply vs);
-              set i "Success";
+              set i (Notice "Success");
               return {}
             } />
           </xml>
