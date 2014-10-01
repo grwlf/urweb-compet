@@ -36,12 +36,12 @@ style visible
 
 datatype identified_with a = IdWith of a * int
 
-val show_iw [a:::Type] (_ : show a) : show (identified_with a) =
-  mkShow (fn (IdWith (a,i)) => (show a) ^ "," ^ (show i))
+val show_iw [a:::Type] : show (identified_with a) =
+  mkShow (fn (IdWith (a,i)) => "idwith#" ^ (show i))
 val eq_iw [a:::Type] : eq (identified_with a) =
   mkEq (fn (IdWith (a,i1)) (IdWith (a,i2)) => i1 = i2)
 
-fun modify s f = l <- get s; set s (f l)
+(* fun modify s f = l <- get s; set s (f l) *)
 
 fun checked [x ::: Type] (l : list (source bool * x)) : transaction (list x) =
   List.mapPartialM (fn (s,r) =>
@@ -422,7 +422,7 @@ and compet_grps cid =
 
       i <- mkosd {};
 
-      ch <- lift (source []);
+      (* ch <- lift (source []); *)
 
       push_back ( tnest (
 
@@ -442,7 +442,16 @@ and compet_grps cid =
 
           push_back_xml
           <xml><tr>
-            <td><ccheckbox source={s} onchange={modify ch (P.add1 eq fs.G.Id)}/></td>
+            (* <td><ccheckbox source={s} onchange={modify ch (P.add1 eq (IdWith (s,fs.G.Id)))}/></td> *)
+            <td><ccheckbox source={s} onchange={
+              v <- get s;
+              r <- (case v of
+                |True => tryRpc (compet_groups_add fs.G.Id)
+                |False => tryRpc (compet_groups_rm fs.G.Id));
+              case r of
+                |Some _ => set i Hidden
+                |None => set i (Error "Failed to update the database.")
+            }/></td>
             <td>{[fs.G.GName]}</td>
           </tr></xml>;
           return {}
@@ -452,15 +461,6 @@ and compet_grps cid =
       push_back_xml
         <xml>
           <p>
-            <h3>Update</h3>
-            <button value="Apply" onclick={fn _ =>
-              l <- get ch;
-              r <- tryRpc(compet_groups_add l);
-              case r of
-                |Some _ => set i Hidden
-                |None => set i (Error "Failed to update the database.")
-              }/>
-
             <h3>Add new group</h3>
             {mkform <xml>
               {formgroup [#GName] "Group name"}
@@ -470,9 +470,11 @@ and compet_grps cid =
         </xml>
     ))
   where
-    fun compet_groups_add (gs:list int) : transaction unit =
-      P.forM_ gs (fn gid =>
-        dml(INSERT INTO compet_groups (CId, GId) VALUES ({[cid]}, {[gid]})))
+    fun compet_groups_add (gid:int) : transaction unit =
+      dml(INSERT INTO compet_groups (CId, GId) VALUES ({[cid]}, {[gid]}))
+
+    fun compet_groups_rm (gid:int) : transaction unit =
+      dml(DELETE FROM compet_groups WHERE CId = {[cid]} AND GId = {[gid]})
 
     fun compet_groups_new frm : transaction page =
       g <- oneOrNoRows(SELECT * FROM groups AS G WHERE G.GName = {[frm.GName]} ORDER BY G.GName LIMIT 1);
