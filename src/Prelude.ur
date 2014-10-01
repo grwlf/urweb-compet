@@ -53,12 +53,12 @@ fun foldlM_ [m ::: (Type -> Type)] (_ : monad m) [a ::: Type] [b ::: Type]
 
 fun id [t ::: Type] (x:t) : t = x
 
-fun add1 [a ::: Type] (_:eq a) (i : a) (ls : list a) : list a =
+fun add1 [a ::: Type] (f : a -> a -> bool) (i : a) (ls : list a) : list a =
   let
     fun srch ls' =
       case ls' of
         | [] =>  (i :: ls)
-        | x :: ls'' => if x = i then ls else srch ls''
+        | x :: ls'' => if f x i then ls else srch ls''
   in
     srch ls
   end

@@ -435,7 +435,7 @@ and compet_grps cid =
 
           push_back_xml
           <xml><tr>
-            <td><ccheckbox source={s} onchange={modify ch (P.add1 fs.G.Id)}/></td>
+            <td><ccheckbox source={s} onchange={modify ch (P.add1 eq fs.G.Id)}/></td>
             <td>{[fs.G.GName]}</td>
           </tr></xml>;
           return {}
@@ -451,7 +451,7 @@ and compet_grps cid =
               r <- tryRpc(compet_groups_add l);
               case r of
                 |Some _ => set i Hidden
-                |None => set i (Error "Failed to update the database")
+                |None => set i (Error "Failed to update the database.")
               }/>
 
             <h3>Add new group</h3>
