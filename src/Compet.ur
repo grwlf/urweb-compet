@@ -34,6 +34,13 @@ style visible
 
 *) 
 
+datatype identified_with a = IdWith of a * int
+
+val show_iw [a:::Type] (_ : show a) : show (identified_with a) =
+  mkShow (fn (IdWith (a,i)) => (show a) ^ "," ^ (show i))
+val eq_iw [a:::Type] : eq (identified_with a) =
+  mkEq (fn (IdWith (a,i1)) (IdWith (a,i2)) => i1 = i2)
+
 fun modify s f = l <- get s; set s (f l)
 
 fun checked [x ::: Type] (l : list (source bool * x)) : transaction (list x) =
