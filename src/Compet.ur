@@ -64,14 +64,17 @@ fun mkosd {} : X.state xbody (source osd) =
       <dyn signal={v <- signal s;
         case v of
           |Hidden => return <xml></xml>
-          |Error s => return <xml>{label me B.alert_danger s}</xml>
-          |Notice s => return <xml>{label me B.alert_success s}</xml>
+          |Error s => return <xml>{label (reload me) B.alert_danger s}</xml>
+          |Notice s => return <xml>{label <xml/> B.alert_success s}</xml>
         }/>
     </p></xml>;
     return s
 
   where
-    fun label me css v = 
+
+    fun reload me = <xml><a href={me}>Reload</a> current page to return to actual state.</xml>
+
+    fun label rel css v = 
       <xml>
         <div class={cl (B.alert :: css :: B.alert_dismissable :: [])} role="alert">
           <button value="" class={B.close} data={data "dismiss" "alert"} onclick={fn _ => return {}}>
@@ -80,10 +83,10 @@ fun mkosd {} : X.state xbody (source osd) =
               Close
             </span>
           </button>
-          {[v]}
-          <a href={me}>Reload</a> current page to return to actual state.
+          {[v]} {rel}
         </div>
       </xml>
+
   end
 
 (* fun info_fail s = push <xml><div class={cl (B.alert :: B.alert_danger :: [])} role="alert">{[s]}</div></xml> *)
