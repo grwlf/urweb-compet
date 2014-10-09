@@ -1,17 +1,13 @@
 
-module Cakefile where
+module Cake_Compet where
 
 import Development.Cake3
 import Development.Cake3.Ext.UrWeb
-import Cakefile_P
+import Cake_Compet_P
 
-instance IsString File where fromString = file
-
-main = writeMake (file "Makefile") $ do
-    
-  let pn = "Compet.urp"
-
-  a <- uwapp "-dbms postgres" pn $ do
+theapp bootstrap monadpack = do
+  let pn = file "Compet.urp"
+  uwapp "-dbms postgres" pn $ do
     allow mime "text/javascript";
     allow mime "text/css";
     allow mime "image/jpeg";
@@ -20,18 +16,23 @@ main = writeMake (file "Makefile") $ do
     allow mime "application/octet-stream";
     allow url "/Compet/*"
     database ("dbname="++(takeBaseName pn))
-    safeGet "Compet.ur" "main"
-    safeGet "Compet.ur" "init"
+    safeGet (file "Compet.ur") "main"
+    safeGet (file "Compet.ur") "init"
     sql (pn.="sql")
-    library' (externalMakeTarget "lib/uru3/Bootstrap/lib.urp" "lib")
-    library' (externalMakeTarget "lib/urweb-monad-pack/lib.urp" "lib")
+    bootstrap
+    monadpack
     ur (sys "list")
     ur (sys "string")
-    ur (single "src/Prelude.ur")
-    ur (single "src/XmlGen.ur")
-    bin ("src/Compet.css") [NoScan]
-    ur (pair "src/Compet.ur")
+    ur (single (file "src/Prelude.ur"))
+    ur (single (file "src/XmlGen.ur"))
+    bin (file "src/Compet.css") [NoScan]
+    ur (pair (file "src/Compet.ur"))
 
+
+main = writeMake (file "Makefile") $ do
+  a <- theapp
+    (library' (externalMakeTarget (file "lib/uru3/Bootstrap/lib.urp") "lib"))
+    (library' (externalMakeTarget (file "lib/urweb-monad-pack/lib.urp") "lib"))
   db <- rule $ do
     let sql = urpSql (toUrp a)
     let dbn = takeBaseName sql
@@ -51,5 +52,7 @@ main = writeMake (file "Makefile") $ do
   rule $ do
     phony "all"
     depend a
+    
+
 
 
