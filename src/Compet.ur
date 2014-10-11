@@ -288,9 +288,9 @@ fun template (mb:transaction xbody) : transaction page =
   u <- ap show currentUrl;
   let
     Uru.run (
-    myHeaders (
     JQuery.add (
     Bootstrap.add (
+    myHeaders (
     Uru.withBody (fn _ =>
       b <- mb;
       return
@@ -304,14 +304,35 @@ fun template (mb:transaction xbody) : transaction page =
                 <ul class={cl (B.nav :: B.navbar_nav :: [])}>
                   {active s.Main "Competitions"}
                   {active s.Sportsmen "Sportsmen"}
-                  {active s.Init "Init DB"}
+                  {active s.Init "Reset DB"}
                 </ul>
               </div>
             </div>
           </div>
 
-          <div class={B.container}>
+          <div class={B.container} style="margin-top:50px; margin-bottom:100px">
           {b}
+          </div>
+
+          <div style="padding-top:20px;position:absolute;bottom:0; width:100%; height:100px;">
+            <div class={B.container} style="text-align:center">
+              <hr/>
+              <p class={B.text_muted}>Proudly designed by
+                <a href={bless "http://github.com/grwlf"}>@grwlf</a>.
+                Powerd by <a href={bless "http://impredicative.com/ur/"}>Ur/Web</a> framework.
+              </p>
+              <p class={B.text_muted}>
+              <ul style="padding-left: 0px; margin-top: 20px; color: #999;">
+                {StyleSoup.footer_doc_links (
+                <xml><a href={bless "http://github.com/grwlf/urweb-compet"}>Sources</a></xml> ::
+                <xml><a href={bless "http://impredicative.com/ur/"}>Ur/Web</a></xml> ::
+                <xml><a href={bless "http://github.com"}>GiHub</a></xml> ::
+                <xml><a href={bless "http://github.com/grwlf"}>Grwlf</a></xml> ::
+                []
+                )}
+              </ul>
+              </p>
+            </div>
           </div>
         </xml>
       )))))
@@ -326,6 +347,7 @@ fun template (mb:transaction xbody) : transaction page =
     fun myHeaders f r = 
       f (swap Uru.addHeader r
         <xml>
+          <title>Compet</title>
           <link rel="stylesheet" href={Compet_css.geturl}/>
         </xml>)
 

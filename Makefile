@@ -24,37 +24,41 @@ dropdb: ./Compet.db ./Makefile
 	psql -f ./Compet.sql Compet
 	touch ./Compet.db
 ./Compet.exe: .fix-multy1
-./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/Prelude.ur ./src/XmlGen.ur .cake3/tmpCompet.in0 autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
-	cat .cake3/tmpCompet.in0 > ./Compet.urp
-.cake3/tmpCompet.in0: ./Makefile
-	-rm -rf .cake3/tmpCompet.in0
-	echo 'allow mime text/javascript' >> .cake3/tmpCompet.in0
-	echo 'allow mime text/css' >> .cake3/tmpCompet.in0
-	echo 'allow mime image/jpeg' >> .cake3/tmpCompet.in0
-	echo 'allow mime image/png' >> .cake3/tmpCompet.in0
-	echo 'allow mime image/gif' >> .cake3/tmpCompet.in0
-	echo 'allow mime application/octet-stream' >> .cake3/tmpCompet.in0
-	echo 'allow url /Compet/*' >> .cake3/tmpCompet.in0
-	echo 'database dbname=Compet' >> .cake3/tmpCompet.in0
-	echo 'safeGet Compet/main' >> .cake3/tmpCompet.in0
-	echo 'safeGet Compet/init' >> .cake3/tmpCompet.in0
-	echo 'sql ./Compet.sql' >> .cake3/tmpCompet.in0
-	echo 'library ./lib/uru3/Bootstrap' >> .cake3/tmpCompet.in0
-	echo 'library ./lib/urweb-monad-pack' >> .cake3/tmpCompet.in0
-	echo 'include autogen/Compet_css_c.h' >> .cake3/tmpCompet.in0
-	echo 'link autogen/Compet_css_c.o' >> .cake3/tmpCompet.in0
-	echo 'ffi autogen/Compet_css_c' >> .cake3/tmpCompet.in0
-	echo 'ffi autogen/Compet_css_js' >> .cake3/tmpCompet.in0
-	echo 'allow mime text/css' >> .cake3/tmpCompet.in0
-	echo 'safeGet Compet_css/blobpage' >> .cake3/tmpCompet.in0
-	echo 'safeGet Compet_css/blob' >> .cake3/tmpCompet.in0
-	echo '' >> .cake3/tmpCompet.in0
-	echo '$$/list' >> .cake3/tmpCompet.in0
-	echo '$$/string' >> .cake3/tmpCompet.in0
-	echo './src/Prelude' >> .cake3/tmpCompet.in0
-	echo './src/XmlGen' >> .cake3/tmpCompet.in0
-	echo 'autogen/Compet_css' >> .cake3/tmpCompet.in0
-	echo './src/Compet' >> .cake3/tmpCompet.in0
+./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/Prelude.ur ./src/StyleSoup.ur ./src/XmlGen.ur .cake3/tmp__Compet_in autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
+	cat .cake3/tmp__Compet_in > ./Compet.urp
+.cake3/tmp__Compet_in: ./Makefile
+	-rm -rf .cake3/tmp__Compet_in
+	echo 'allow mime text/javascript' >> .cake3/tmp__Compet_in
+	echo 'allow mime text/css' >> .cake3/tmp__Compet_in
+	echo 'allow mime image/jpeg' >> .cake3/tmp__Compet_in
+	echo 'allow mime image/png' >> .cake3/tmp__Compet_in
+	echo 'allow mime image/gif' >> .cake3/tmp__Compet_in
+	echo 'allow mime application/octet-stream' >> .cake3/tmp__Compet_in
+	echo 'allow url /Compet/*' >> .cake3/tmp__Compet_in
+	echo 'allow url http://github.com*' >> .cake3/tmp__Compet_in
+	echo 'allow url http://impredicative.com*' >> .cake3/tmp__Compet_in
+	echo 'allow url http://hit.msk.ru*' >> .cake3/tmp__Compet_in
+	echo 'database dbname=Compet' >> .cake3/tmp__Compet_in
+	echo 'safeGet Compet/main' >> .cake3/tmp__Compet_in
+	echo 'safeGet Compet/init' >> .cake3/tmp__Compet_in
+	echo 'sql ./Compet.sql' >> .cake3/tmp__Compet_in
+	echo 'library ./lib/uru3/Bootstrap' >> .cake3/tmp__Compet_in
+	echo 'library ./lib/urweb-monad-pack' >> .cake3/tmp__Compet_in
+	echo 'include autogen/Compet_css_c.h' >> .cake3/tmp__Compet_in
+	echo 'link autogen/Compet_css_c.o' >> .cake3/tmp__Compet_in
+	echo 'ffi autogen/Compet_css_c' >> .cake3/tmp__Compet_in
+	echo 'ffi autogen/Compet_css_js' >> .cake3/tmp__Compet_in
+	echo 'allow mime text/css' >> .cake3/tmp__Compet_in
+	echo 'safeGet Compet_css/blobpage' >> .cake3/tmp__Compet_in
+	echo 'safeGet Compet_css/blob' >> .cake3/tmp__Compet_in
+	echo '' >> .cake3/tmp__Compet_in
+	echo '$$/list' >> .cake3/tmp__Compet_in
+	echo '$$/string' >> .cake3/tmp__Compet_in
+	echo './src/Prelude' >> .cake3/tmp__Compet_in
+	echo './src/XmlGen' >> .cake3/tmp__Compet_in
+	echo 'autogen/Compet_css' >> .cake3/tmp__Compet_in
+	echo './src/StyleSoup' >> .cake3/tmp__Compet_in
+	echo './src/Compet' >> .cake3/tmp__Compet_in
 ./Compet.sql: .fix-multy1
 .INTERMEDIATE: .fix-multy1
 .fix-multy1: ./Compet.urp ./Makefile $(call GUARD,URVERSION)
@@ -92,8 +96,8 @@ dropdb: .fix-multy1
 ./Compet.exe: .fix-multy1
 .PHONY: ./Compet.urp
 ./Compet.urp: .fix-multy1
-.PHONY: .cake3/tmpCompet.in0
-.cake3/tmpCompet.in0: .fix-multy1
+.PHONY: .cake3/tmp__Compet_in
+.cake3/tmp__Compet_in: .fix-multy1
 .PHONY: ./Compet.sql
 ./Compet.sql: .fix-multy1
 .INTERMEDIATE: .fix-multy1
@@ -108,7 +112,7 @@ autogen/Compet_css_c.o: .fix-multy1
 endif
 .PHONY: clean
 clean: 
-	-rm ./Compet.db ./Compet.exe ./Compet.sql ./Compet.urp .cake3/tmpCompet.in0 autogen/Compet_css_c.o
+	-rm ./Compet.db ./Compet.exe ./Compet.sql ./Compet.urp .cake3/tmp__Compet_in autogen/Compet_css_c.o
 	-rm -rf .cake3
 
 endif

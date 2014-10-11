@@ -1,5 +1,9 @@
 body {
-  padding-top: 50px;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
 }
 
 .Compet_invisible {
@@ -8,4 +12,3 @@ body {
 
 .Compet_visible {
 }
-

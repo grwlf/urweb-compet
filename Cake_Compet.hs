@@ -15,6 +15,9 @@ theapp bootstrap monadpack = do
     allow mime "image/gif";
     allow mime "application/octet-stream";
     allow url "/Compet/*"
+    allow url "http://github.com*"
+    allow url "http://impredicative.com*"
+    allow url "http://hit.msk.ru*"
     database ("dbname="++(takeBaseName pn))
     safeGet (file "Compet.ur") "main"
     safeGet (file "Compet.ur") "init"
@@ -26,6 +29,7 @@ theapp bootstrap monadpack = do
     ur (single (file "src/Prelude.ur"))
     ur (single (file "src/XmlGen.ur"))
     bin (file "src/Compet.css") [NoScan]
+    ur (single (file "src/StyleSoup.ur"))
     ur (pair (file "src/Compet.ur"))
 
 

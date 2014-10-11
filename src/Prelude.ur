@@ -1,29 +1,47 @@
+(*
 
-fun swap [a:::Type] [b:::Type] [c:::Type] (f:a->b->c) (y:b) (z:a) : c = f z y
-
-fun ap [a:::Type] [b:::Type] [m:::Type->Type] (_:monad m) (f:a->b) (ma:m a) : m b =
-  a <- ma;
-  return (f a)
-
-fun forM_ [m ::: (Type -> Type)] (_ : monad m) [a] (ls:list a) (f:a -> m {}) : m {} =
-    let
-        fun mapM' ls =
-            case ls of
-              | []      => return {}
-              | x :: ls => f x; mapM' ls
-    in
-        mapM' ls
-    end
-
-fun forM [m ::: (Type -> Type)] (_ : monad m) [a] [b] (ls:list a) (f:a -> m b) : m (list b) = List.mapM f ls
+ _____            _           
+|_   _|   _ _ __ | | ___  ___ 
+  | || | | | '_ \| |/ _ \/ __|
+  | || |_| | |_) | |  __/\__ \
+  |_| \__,_| .__/|_|\___||___/
+           |_|                
+*)
 
 fun fst [a:::Type] [b:::Type] ((x,_):(a*b)) : a = x
 
 fun snd [a:::Type] [b:::Type] ((_,y):(a*b)) : b = y
 
-(* val show_pair [a] [b] [show a] [show b] : show (a*b) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")") *)
+(*
+ _     _     _   
+| |   (_)___| |_ 
+| |   | / __| __|
+| |___| \__ \ |_ 
+|_____|_|___/\__|
+                 
+*)
 
-val show_int_string  : show (int*string) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")")
+fun head [a:::Type] (l:list a) : a = 
+  case l of
+    |[] => error <xml>head: empty list</xml>
+    | x :: _ => x
+
+fun tail [a:::Type] (l:list a) : list a = 
+  case l of
+    | [] => error <xml>head: empty list</xml>
+    | _ :: l => l
+
+fun for [a:::Type] [b:::Type] (l:list a) (f:a->b) : list b = List.mp f l
+
+fun add1 [a ::: Type] (f : a -> a -> bool) (i : a) (ls : list a) : list a =
+  let
+    fun srch ls' =
+      case ls' of
+        | [] =>  (i :: ls)
+        | x :: ls'' => if f x i then ls else srch ls''
+  in
+    srch ls
+  end
 
 fun cycledAt  [t ::: Type] (i:int) (ls : list t) : t =
   let
@@ -46,20 +64,52 @@ fun strlist (s:string) : list char =
   end
 
 
+(*
+
+ __  __                       _ 
+|  \/  | ___  _ __   __ _  __| |
+| |\/| |/ _ \| '_ \ / _` |/ _` |
+| |  | | (_) | | | | (_| | (_| |
+|_|  |_|\___/|_| |_|\__,_|\__,_|
+                                
+*)
+
+fun ap [a:::Type] [b:::Type] [m:::Type->Type] (_:monad m) (f:a->b) (ma:m a) : m b =
+  a <- ma;
+  return (f a)
+
+fun forM_ [m ::: (Type -> Type)] (_ : monad m) [a] (ls:list a) (f:a -> m {}) : m {} =
+    let
+        fun mapM' ls =
+            case ls of
+              | []      => return {}
+              | x :: ls => f x; mapM' ls
+    in
+        mapM' ls
+    end
+
+fun forM [m ::: (Type -> Type)] (_ : monad m) [a] [b] (ls:list a) (f:a -> m b) : m (list b) = List.mapM f ls
+
 fun foldlM_ [m ::: (Type -> Type)] (_ : monad m) [a ::: Type] [b ::: Type]
   (f:a -> b -> m b) (s:b) (l:list a) : m {} =
     _ <- List.foldlM f s l;
     return {}
 
+(*
+
+ __  __ _          
+|  \/  (_)___  ___ 
+| |\/| | / __|/ __|
+| |  | | \__ \ (__ 
+|_|  |_|_|___/\___|
+*)
+                   
 fun id [t ::: Type] (x:t) : t = x
 
-fun add1 [a ::: Type] (f : a -> a -> bool) (i : a) (ls : list a) : list a =
-  let
-    fun srch ls' =
-      case ls' of
-        | [] =>  (i :: ls)
-        | x :: ls'' => if f x i then ls else srch ls''
-  in
-    srch ls
-  end
+fun swap [a:::Type] [b:::Type] [c:::Type] (f:a->b->c) (y:b) (z:a) : c = f z y
+
+(* val show_pair [a] [b] [show a] [show b] : show (a*b) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")") *)
+
+val show_int_string  : show (int*string) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")")
+
 
