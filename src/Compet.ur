@@ -327,7 +327,6 @@ fun template (mb:transaction xbody) : transaction page =
                 <xml><a href={bless "http://github.com/grwlf/urweb-compet"}>Sources</a></xml> ::
                 <xml><a href={bless "http://impredicative.com/ur/"}>Ur/Web</a></xml> ::
                 <xml><a href={bless "http://github.com"}>GiHub</a></xml> ::
-                <xml><a href={bless "http://github.com/grwlf"}>Grwlf</a></xml> ::
                 []
                 )}
               </ul>
