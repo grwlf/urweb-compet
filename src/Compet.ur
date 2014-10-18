@@ -456,14 +456,15 @@ and compet_grps cid =
         X.query_
         (
           SELECT *
-          FROM groups AS G LEFT OUTER JOIN compet_groups AS CG ON CG.GId = G.Id
+          FROM groups AS G LEFT OUTER JOIN
+            (SELECT CG.GId AS GId FROM
+              compet_groups AS CG WHERE CG.CId = {[cid]}) AS CG ON CG.GId = G.Id
         )
         (fn fs =>
-          s <- X.source (case fs.CG.CId of |Some x => if x = cid then True else False |_=>False);
+          s <- X.source (case fs.CG.GId of |Some _ => True |None =>False);
 
           push_back_xml
           <xml><tr>
-            (* <td><ccheckbox source={s} onchange={modify ch (P.add1 eq (IdWith (s,fs.G.Id)))}/></td> *)
             <td><ccheckbox source={s} onchange={
               v <- get s;
               r <- (case v of
