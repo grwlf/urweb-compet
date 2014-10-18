@@ -243,10 +243,11 @@ table compet_groups : ([CId = int, GId = int])
   CONSTRAINT CG_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CG_G FOREIGN KEY (GId) REFERENCES groups (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
-table compet_sportsmen : ([CId = int, SId = int] ++ sportsmen_base ++ [Target = string])
-  PRIMARY KEY (CId, SId),
+table compet_sportsmen : ([CId = int, SId = int, GId = int] ++ sportsmen_base ++ [Target = string])
+  PRIMARY KEY (CId, SId, GId),
   CONSTRAINT CS_S FOREIGN KEY (SId) REFERENCES sportsmen (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT CS_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT CS_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT CS_G FOREIGN KEY (GId) REFERENCES groups (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
 table scores : ([CId = int, SId = int, Round = int, Score = int])
   PRIMARY KEY (CId, SId, Round),
@@ -264,12 +265,13 @@ fun sportsmen_new_ fs =
       VALUES ({[i]}, {[fs.SName]}, {[serialize (readError fs.Sex)]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
   return i
 
-fun compet_register_ cid uid : transaction {} =
+fun compet_register_ cid uid gid : transaction {} =
   u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[uid]});
-  dml(INSERT INTO compet_sportsmen (CId, SId, SName, Sex, Bow, Birth, Club, Rank, Target)
-      VALUES ({[cid]}, {[u.Id]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
+  dml(INSERT INTO compet_sportsmen (CId, SId, GId, SName, Sex, Bow, Birth, Club, Rank, Target)
+      VALUES ({[cid]}, {[u.Id]}, {[gid]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
   dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
   dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
+  _ <- tryDml(INSERT INTO compet_groups (CId,GId) VALUES({[cid]}, {[gid]}));
   return {}
 
 
@@ -442,8 +444,6 @@ and compet_grps cid =
       compet_pills me cid;
 
       i <- mkosd {};
-
-      (* ch <- lift (source []); *)
 
       push_back ( tnest (
 
@@ -713,56 +713,61 @@ and compet_register cid =
 
       compet_pills me cid;
 
-      push_back( tnest (
-
+      X.query_ (SELECT * FROM groups AS G, compet_groups AS CG WHERE CG.CId={[cid]} AND CG.GId = G.Id) (fn fs =>
         push_back_xml
-        <xml><tr>
-          <th>Name</th>
-          <th>Birth</th>
-          <th>Bow</th>
-          <th>Club</th>
-          <th></th>
-        </tr></xml>;
+        <xml><h3>{[fs.G.GName]}</h3></xml>;
 
-        X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]})
-        (fn fs =>
+        push_back ( tnest (
+
           push_back_xml
           <xml><tr>
-            <td>{[fs.CS.SName]}</td>
-            <td>{[fs.CS.Birth]}</td>
-            <td>{[fs.CS.Bow]}</td>
-            <td>{[fs.CS.Club]}</td>
-            <td><a link={registered_details cid fs.CS.SId}>[Details]</a></td>
-          </tr></xml>
-       )
+            <th>Name</th>
+            <th>Birth</th>
+            <th>Bow</th>
+            <th>Club</th>
+            <th></th>
+          </tr></xml>;
 
-      ));
+          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[fs.G.Id]})
+          (fn fs =>
+            push_back_xml
+            <xml><tr>
+              <td>{[fs.CS.SName]}</td>
+              <td>{[fs.CS.Birth]}</td>
+              <td>{[fs.CS.Bow]}</td>
+              <td>{[fs.CS.Club]}</td>
+              <td><a link={registered_details cid fs.CS.SId}>[Details]</a></td>
+            </tr></xml>
+         )
 
-      ss <- X.source "";
-      ss2 <- X.source [];
+        ))
+      )
 
-      push_back_xml
-      <xml><div>
-        <ctextbox source={ss}/>
-        <button value="Search" onclick={fn _ =>
-          v <- get ss;
-          ls <- rpc (sportsmen_search cid v);
-          set ss2 ls
-        }/>
-        <dyn signal={
-          l <- signal ss2;
-          return (swap List.mapX l (fn x =>
-            <xml>
-              <br/>
-              <button value="Register" onclick={fn _ =>
-                rpc (compet_register_ cid x.Id);
-                redirect (url (compet_register cid))
-              }/>
-              {[x.SName]} ({[x.Birth]})
-            </xml>
-            ))
-         }/>
-      </div></xml>
+
+      (* ss <- X.source ""; *)
+      (* ss2 <- X.source []; *)
+      (* push_back_xml *)
+      (* <xml><div> *)
+      (*   <ctextbox source={ss}/> *)
+      (*   <button value="Search" onclick={fn _ => *)
+      (*     v <- get ss; *)
+      (*     ls <- rpc (sportsmen_search cid v); *)
+      (*     set ss2 ls *)
+      (*   }/> *)
+      (*   <dyn signal={ *)
+      (*     l <- signal ss2; *)
+      (*     return (swap List.mapX l (fn x => *)
+      (*       <xml> *)
+      (*         <br/> *)
+      (*         <button value="Register" onclick={fn _ => *)
+      (*           rpc (compet_register_ cid x.Id); *)
+      (*           redirect (url (compet_register cid)) *)
+      (*         }/> *)
+      (*         {[x.SName]} ({[x.Birth]}) *)
+      (*       </xml> *)
+      (*       )) *)
+      (*    }/> *)
+      (* </div></xml> *)
     ))
 
   where
@@ -932,12 +937,12 @@ and init {} : transaction page =
   u3 <- sportsmen_new_ {SName="Петров Иван", Sex="М", Bow="Классика", Birth="03.04.1997", Rank="1", Club="СДЮШОР8"};
   u4 <- sportsmen_new_ {SName="Дмитриев Дмитрий", Sex="М", Bow="Блок", Birth="03.04.1978", Rank="1", Club="СДЮШОР8"};
   u5 <- sportsmen_new_ {SName="Иванова Мария", Sex="Ж", Bow="Блок", Birth="03.04.1988", Rank="2", Club="СДЮШОР8"};
-  compet_register_ c1 u1;
-  compet_register_ c1 u2;
-  compet_register_ c1 u3;
-  compet_register_ c2 u1;
-  compet_register_ c2 u4;
-  compet_register_ c2 u5;
+  compet_register_ c1 u1 g1;
+  compet_register_ c1 u2 g1;
+  compet_register_ c1 u3 g1;
+  compet_register_ c2 u1 g1;
+  compet_register_ c2 u4 g1;
+  compet_register_ c2 u5 g1;
   redirect (url (complist_view {}))
 
 
