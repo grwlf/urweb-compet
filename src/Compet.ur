@@ -306,6 +306,7 @@ fun template (mb:transaction xbody) : transaction page =
                 <ul class={cl (B.nav :: B.navbar_nav :: [])}>
                   {active s.Main "Competitions"}
                   {active s.Sportsmen "Sportsmen"}
+                  {active s.Groups "Groups"}
                   {active s.Init "Reset DB"}
                 </ul>
               </div>
@@ -356,6 +357,7 @@ fun template (mb:transaction xbody) : transaction page =
       Title = "Competitions",
       Main = url(complist_view {}),
       Sportsmen = url(sportsmen_list {}),
+      Groups = url(groups_list {}),
       About = url(about {}),
       Init = url(init {})
       }
@@ -451,17 +453,25 @@ and compet_grps cid =
         <xml><tr>
           <th></th>
           <th>Name</th>
+          <th>Participants</th>
         </tr></xml>;
 
         X.query_
         (
           SELECT *
           FROM groups AS G LEFT OUTER JOIN
-            (SELECT CG.GId AS GId FROM
-              compet_groups AS CG WHERE CG.CId = {[cid]}) AS CG ON CG.GId = G.Id
+            (SELECT CG.GId AS GId FROM compet_groups AS CG WHERE CG.CId = {[cid]}) AS CG
+          ON CG.GId = G.Id
         )
         (fn fs =>
           s <- X.source (case fs.CG.GId of |Some _ => True |None =>False);
+
+          n <- (case fs.CG.GId of
+                  |Some gid =>
+                    n <- lift ( oneRowE1(SELECT COUNT( * ) FROM compet_sportsmen AS CS WHERE
+                      CS.CId = {[cid]} AND CS.GId = {[gid]}) );
+                    return (show n)
+                  |None => return "");
 
           push_back_xml
           <xml><tr>
@@ -475,6 +485,7 @@ and compet_grps cid =
                 |None => set i (Error "Failed to update the database.")
             }/></td>
             <td>{[fs.G.GName]}</td>
+            <td>{[n]}</td>
           </tr></xml>;
           return {}
         )
@@ -496,7 +507,8 @@ and compet_grps cid =
       dml(INSERT INTO compet_groups (CId, GId) VALUES ({[cid]}, {[gid]}))
 
     fun compet_groups_rm (gid:int) : transaction unit =
-      dml(DELETE FROM compet_groups WHERE CId = {[cid]} AND GId = {[gid]})
+      dml(DELETE FROM compet_groups WHERE CId = {[cid]} AND GId = {[gid]});
+      dml(DELETE FROM compet_sportsmen WHERE CId = {[cid]} AND GId = {[gid]})
 
     fun compet_groups_new frm : transaction page =
       g <- oneOrNoRows(SELECT * FROM groups AS G WHERE G.GName = {[frm.GName]} ORDER BY G.GName LIMIT 1);
@@ -910,6 +922,35 @@ and sportsmen_list {} : transaction page =
           redirect ( url (sportsmen_list {}))
       end
   end
+
+and groups_list {} : transaction page =
+  let
+  me <- currentUrl;
+  template ( X.run (
+    push_back( tnest(
+      push_back_xml
+      <xml><tr>
+        <th>Name</th>
+        <th></th>
+      </tr></xml>;
+
+      X.query_
+      (SELECT * FROM groups AS G)
+      (fn fs =>
+        push_back_xml
+        <xml><tr>
+        <td>{[fs.G.GName]}</td>
+        <td><button onclick={fn _ => _ <- tryRpc(groups_del fs.G.Id); redirect(me)}>X</button></td>
+        </tr></xml>
+      )
+    ))
+  ))
+  where
+    fun groups_del (gid:int) : transaction {} = 
+      dml(DELETE FROM groups WHERE Id = {[gid]});
+      return {}
+  end
+
 
 and sportsmen_search (cid:int) (s:string) : transaction (list (record sportsmen)) =
   fs <- queryL(
