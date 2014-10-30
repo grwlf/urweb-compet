@@ -26,6 +26,7 @@ theapp bootstrap monadpack = do
     monadpack
     ur (sys "list")
     ur (sys "string")
+    ur (sys "option")
     ur (single (file "src/Prelude.ur"))
     ur (single (file "src/XmlGen.ur"))
     bin (file "src/Compet.css") [NoScan]

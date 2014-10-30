@@ -3,6 +3,9 @@ structure X = XmlGen
 structure P = Prelude
 structure CSS = CSS
 structure Str = String
+structure O = Option
+
+val isSome = O.isSome
 
 val swap = @@P.swap
 val ap = @@P.ap
@@ -479,7 +482,7 @@ and compet_grps cid =
           ON CG.GId = G.Id
         )
         (fn fs =>
-          s <- X.source (case fs.CG.GId of |Some _ => True |None =>False);
+          s <- X.source (isSome fs.CG.GId);
 
           n <- (case fs.CG.GId of
                   |Some gid =>
@@ -948,7 +951,7 @@ and sportsmen_search (cid:int) (gid:int) : transaction page =
   let
   template (X.run(
 
-    osd <- mkosd {};
+    o <- mkosd {};
 
     push_back_xml <xml><h2>Search</h2></xml>;
 
@@ -974,19 +977,22 @@ and sportsmen_search (cid:int) (gid:int) : transaction page =
       )
       (fn fs =>
 
-        sid <- return fs.S.Id;
+        s <- lift (source (isSome fs.CS.SId));
 
-        btn <- return (case fs.CS.SId of
-          |Some sid=><xml><button value="Remove" onclick={fn _=>
-            rpc(compet_unregister_group_ cid sid gid)}/></xml>
-          |None =><xml><button value="Add" onclick={fn _ =>
-            rpc(compet_register_ cid sid gid)}/></xml>);
+        sid <- return fs.S.Id;
 
         push_back_xml
         <xml><tr>
           <td>{[fs.S.SName]}</td>
           <td>{[fs.S.Birth]}</td>
-          <td>{btn}</td>
+          <td>
+          <ccheckbox source={s} onchange={
+            v <- get s;
+            case v of
+              |True => osdRpc_ o (tryRpc(compet_register_ cid sid gid))
+              |False => osdRpc_ o (tryRpc(compet_unregister_group_ cid sid gid))
+          }/>
+          </td>
         </tr></xml>
 
       )

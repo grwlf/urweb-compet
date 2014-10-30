@@ -54,6 +54,7 @@ dropdb: ./Compet.db ./Makefile
 	echo '' >> .cake3/tmp__Compet_in
 	echo '$$/list' >> .cake3/tmp__Compet_in
 	echo '$$/string' >> .cake3/tmp__Compet_in
+	echo '$$/option' >> .cake3/tmp__Compet_in
 	echo './src/Prelude' >> .cake3/tmp__Compet_in
 	echo './src/XmlGen' >> .cake3/tmp__Compet_in
 	echo 'autogen/Compet_css' >> .cake3/tmp__Compet_in
