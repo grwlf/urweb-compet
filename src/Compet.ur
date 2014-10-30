@@ -96,6 +96,12 @@ fun mkosd {} : X.state xbody (source osd) =
 
   end
 
+fun osdRpc_ [a ::: Type] (o: source osd) (x:transaction (option a)) : transaction {} =
+  r <- x;
+  case r of
+    |Some x => return {}
+    |None => set o (Error "Falied to update the database")
+
 (* fun info_fail s = push <xml><div class={cl (B.alert :: B.alert_danger :: [])} role="alert">{[s]}</div></xml> *)
 
 (* Bootstrap-based pills *)
@@ -265,13 +271,23 @@ fun sportsmen_new_ fs =
       VALUES ({[i]}, {[fs.SName]}, {[serialize (readError fs.Sex)]}, {[fs.Bow]}, {[fs.Birth]}, {[fs.Rank]}, {[fs.Club]}));
   return i
 
-fun compet_register_ cid uid gid : transaction {} =
-  u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[uid]});
+fun compet_register_ cid sid gid : transaction {} =
+  u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[sid]});
   dml(INSERT INTO compet_sportsmen (CId, SId, GId, SName, Sex, Bow, Birth, Club, Rank, Target)
       VALUES ({[cid]}, {[u.Id]}, {[gid]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
   dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
   dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
   _ <- tryDml(INSERT INTO compet_groups (CId,GId) VALUES({[cid]}, {[gid]}));
+  return {}
+
+fun compet_unregister_group_ cid sid gid : transaction {} =
+  dml(DELETE FROM compet_sportsmen WHERE CId = {[cid]} AND SId = {[sid]} AND GId = {[gid]});
+  dml(DELETE FROM scores WHERE CId = {[cid]} AND SId = {[sid]});
+  return {}
+
+fun compet_unregister_all_ cid sid : transaction {} =
+  dml(DELETE FROM compet_sportsmen WHERE CId = {[cid]} AND SId = {[sid]});
+  dml(DELETE FROM scores WHERE CId = {[cid]} AND SId = {[sid]});
   return {}
 
 
@@ -356,7 +372,7 @@ fun template (mb:transaction xbody) : transaction page =
     val s = {
       Title = "Competitions",
       Main = url(complist_view {}),
-      Sportsmen = url(sportsmen_list {}),
+      Sportsmen = url(sportsmen_view {}),
       Groups = url(groups_list {}),
       About = url(about {}),
       Init = url(init {})
@@ -374,10 +390,10 @@ fun template (mb:transaction xbody) : transaction page =
 
 *)
 
-and registered_details (cid:int) (uid:int) : transaction page =
+and registered_details (cid:int) (sid:int) : transaction page =
   let
     template  (
-      fs <- oneRow1(SELECT * FROM compet_sportsmen AS U WHERE U.SId = {[uid]} AND U.CId = {[cid]});
+      fs <- oneRow1(SELECT * FROM compet_sportsmen AS U WHERE U.SId = {[sid]} AND U.CId = {[cid]});
       return <xml>
         <h3>{[fs.SName]}</h3>
         <p>
@@ -406,19 +422,18 @@ and registered_details (cid:int) (uid:int) : transaction page =
       dml(UPDATE compet_sportsmen
           SET SName = {[frm.SName]}, Sex = {[serialize (readError frm.Sex)]}, Birth = {[frm.Birth]},
               Club = {[frm.Club]}, Rank = {[frm.Rank]}
-          WHERE CId = {[cid]} AND SId = {[uid]});
+          WHERE CId = {[cid]} AND SId = {[sid]});
       (case frm.Propagate of
        |False => return {}
        |True =>
          dml(UPDATE sportsmen
            SET SName = {[frm.SName]}, Sex = {[serialize (readError frm.Sex)]}, Birth = {[frm.Birth]},
                Club = {[frm.Club]}, Rank = {[frm.Rank]}
-           WHERE Id = {[uid]}));
-      redirect( url(registered_details cid uid) )
+           WHERE Id = {[sid]}));
+      redirect( url(registered_details cid sid) )
 
     fun registered_unregister _ =
-      dml(DELETE FROM compet_sportsmen WHERE CId = {[cid]} AND SId = {[uid]});
-      dml(DELETE FROM scores WHERE CId = {[cid]} AND SId = {[uid]});
+      compet_unregister_all_ cid sid;
       redirect( url (compet_register cid) )
   end
 
@@ -477,13 +492,10 @@ and compet_grps cid =
           <xml><tr>
             <td><ccheckbox source={s} onchange={
               v <- get s;
-              r <- (case v of
-                |True => tryRpc (compet_groups_add fs.G.Id)
-                |False => tryRpc (compet_groups_rm fs.G.Id));
-              case r of
-                |Some _ => set i Hidden
-                |None => set i (Error "Failed to update the database.")
-            }/></td>
+              case v of
+                |True => osdRpc_ i (tryRpc( compet_groups_add fs.G.Id))
+                |False => osdRpc_ i (tryRpc( compet_groups_rm fs.G.Id))
+              } /></td>
             <td>{[fs.G.GName]}</td>
             <td>{[n]}</td>
           </tr></xml>;
@@ -726,11 +738,13 @@ and compet_register cid =
       compet_pills me cid;
 
       X.query_ (SELECT * FROM groups AS G, compet_groups AS CG WHERE CG.CId={[cid]} AND CG.GId = G.Id) (fn fs =>
+
+        gid <- return fs.G.Id;
+
         push_back_xml
         <xml><h3>{[fs.G.GName]}</h3></xml>;
 
         push_back ( tnest (
-
           push_back_xml
           <xml><tr>
             <th>Name</th>
@@ -740,7 +754,7 @@ and compet_register cid =
             <th></th>
           </tr></xml>;
 
-          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[fs.G.Id]})
+          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[gid]})
           (fn fs =>
             push_back_xml
             <xml><tr>
@@ -752,7 +766,14 @@ and compet_register cid =
             </tr></xml>
          )
 
-        ))
+        ));
+
+        push_back_xml
+        <xml>
+          <button value="Add" onclick={fn _ =>
+            redirect(url(sportsmen_search cid gid))
+          }/>
+        </xml>
       )
 
 
@@ -853,7 +874,7 @@ and complist_view {} : transaction page =
     ))
   ))
 
-and sportsmen_list {} : transaction page =
+and sportsmen_view {} : transaction page =
   let
     template (
 
@@ -880,7 +901,7 @@ and sportsmen_list {} : transaction page =
               <td>{[fs.T.Bow]}</td>
               <td>{[fs.T.Rank]}</td>
               <td>{[fs.T.Club]}</td>
-              <td> <a link={sportsmen_detail fs.T.Id}>[Details]</a> </td>
+              <td><a link={sportsmen_detail fs.T.Id}>[Details]</a></td>
             </tr>
           </xml>);
 
@@ -905,9 +926,9 @@ and sportsmen_list {} : transaction page =
 
     fun sportsmen_new fs : transaction page = 
       _ <- sportsmen_new_ fs;
-      redirect ( url (sportsmen_list {}))
+      redirect ( url (sportsmen_view {}))
 
-    fun sportsmen_detail uid : transaction page = 
+    fun sportsmen_detail sid : transaction page = 
       let
         template (return
         <xml>
@@ -918,9 +939,62 @@ and sportsmen_list {} : transaction page =
         </xml>)
       where
         fun sportsmen_delete _ : transaction page =
-          dml(DELETE FROM sportsmen WHERE Id = {[uid]});
-          redirect ( url (sportsmen_list {}))
+          dml(DELETE FROM sportsmen WHERE Id = {[sid]});
+          redirect ( url (sportsmen_view {}))
       end
+  end
+
+and sportsmen_search (cid:int) (gid:int) : transaction page =
+  let
+  template (X.run(
+
+    osd <- mkosd {};
+
+    push_back_xml <xml><h2>Search</h2></xml>;
+
+    push_back( tnest (
+      push_back_xml
+      <xml><tr>
+        <th>Name</th>
+        <th>Birth</th>
+        <th>Bow</th>
+        <th>Rank</th>
+        <th>Club</th>
+        <th></th>
+      </tr></xml>;
+
+      X.query_ (
+        SELECT *
+        FROM
+          sportsmen AS S LEFT OUTER JOIN
+          ( SELECT CS.SId AS SId
+            FROM compet_sportsmen AS CS
+            WHERE CS.CId = {[cid]} AND CS.GId = {[gid]} ) AS CS
+        ON CS.SId = S.Id
+      )
+      (fn fs =>
+
+        sid <- return fs.S.Id;
+
+        btn <- return (case fs.CS.SId of
+          |Some sid=><xml><button value="Remove" onclick={fn _=>
+            rpc(compet_unregister_group_ cid sid gid)}/></xml>
+          |None =><xml><button value="Add" onclick={fn _ =>
+            rpc(compet_register_ cid sid gid)}/></xml>);
+
+        push_back_xml
+        <xml><tr>
+          <td>{[fs.S.SName]}</td>
+          <td>{[fs.S.Birth]}</td>
+          <td>{btn}</td>
+        </tr></xml>
+
+      )
+    ))
+  ))
+  where
+    fun sportsmen_search_add (sid:int) : transaction unit =
+      return {}
   end
 
 and groups_list {} : transaction page =
@@ -951,15 +1025,14 @@ and groups_list {} : transaction page =
       return {}
   end
 
-
-and sportsmen_search (cid:int) (s:string) : transaction (list (record sportsmen)) =
-  fs <- queryL(
-    SELECT * FROM sportsmen AS U,
-      (SELECT U.Id AS I, COUNT(CS.CId) AS N
-       FROM sportsmen AS U LEFT JOIN compet_sportsmen AS CS ON U.Id = CS.SId AND CS.CId = {[cid]}
-       WHERE U.SName LIKE {["%" ^ s ^ "%"]} GROUP BY U.Id) AS SS
-    WHERE U.Id = SS.I AND SS.N = 0);
-  return (List.mp (fn x => x.U) fs)
+(* and sportsmen_search (cid:int) (s:string) : transaction (list (record sportsmen)) = *)
+(*   fs <- queryL( *)
+(*     SELECT * FROM sportsmen AS U, *)
+(*       (SELECT U.Id AS I, COUNT(CS.CId) AS N *)
+(*        FROM sportsmen AS U LEFT JOIN compet_sportsmen AS CS ON U.Id = CS.SId AND CS.CId = {[cid]} *)
+(*        WHERE U.SName LIKE {["%" ^ s ^ "%"]} GROUP BY U.Id) AS SS *)
+(*     WHERE U.Id = SS.I AND SS.N = 0); *)
+(*   return (List.mp (fn x => x.U) fs) *)
 
 and main {} : transaction page = redirect (url (complist_view {}))
 
