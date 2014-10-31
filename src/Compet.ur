@@ -258,8 +258,8 @@ table compet_sportsmen : ([CId = int, SId = int, GId = int] ++ sportsmen_base ++
   CONSTRAINT CS_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CS_G FOREIGN KEY (GId) REFERENCES groups (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
-table scores : ([CId = int, SId = int, Round = int, Score = int])
-  PRIMARY KEY (CId, SId, Round),
+table scores : ([CId = int, SId = int, GId = int, Round = int, Score = int])
+  PRIMARY KEY (CId, SId, GId, Round),
   CONSTRAINT S_S FOREIGN KEY (SId) REFERENCES sportsmen (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT S_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
@@ -278,8 +278,8 @@ fun compet_register_ cid sid gid : transaction {} =
   u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[sid]});
   dml(INSERT INTO compet_sportsmen (CId, SId, GId, SName, Sex, Bow, Birth, Club, Rank, Target)
       VALUES ({[cid]}, {[u.Id]}, {[gid]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
-  dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 0, 0));
-  dml(INSERT INTO scores (CId, SId, Round, Score) VALUES ({[cid]}, {[u.Id]}, 1, 0));
+  dml(INSERT INTO scores (CId, SId, GId, Round, Score) VALUES ({[cid]}, {[u.Id]}, {[gid]}, 0, 0));
+  dml(INSERT INTO scores (CId, SId, GId, Round, Score) VALUES ({[cid]}, {[u.Id]}, {[gid]}, 1, 0));
   _ <- tryDml(INSERT INTO compet_groups (CId,GId) VALUES({[cid]}, {[gid]}));
   return {}
 
@@ -774,7 +774,7 @@ and compet_register cid =
         push_back_xml
         <xml>
           <button value="Add" onclick={fn _ =>
-            redirect(url(sportsmen_search cid gid))
+            redirect(url(sportsmen_search cid gid ""))
           }/>
         </xml>
       )
@@ -947,7 +947,7 @@ and sportsmen_view {} : transaction page =
       end
   end
 
-and sportsmen_search (cid:int) (gid:int) : transaction page =
+and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
   let
   template (X.run(
 
@@ -974,6 +974,7 @@ and sportsmen_search (cid:int) (gid:int) : transaction page =
             FROM compet_sportsmen AS CS
             WHERE CS.CId = {[cid]} AND CS.GId = {[gid]} ) AS CS
         ON CS.SId = S.Id
+        WHERE S.SName LIKE {["%"^q^"%"]}
       )
       (fn fs =>
 
@@ -999,8 +1000,6 @@ and sportsmen_search (cid:int) (gid:int) : transaction page =
     ))
   ))
   where
-    fun sportsmen_search_add (sid:int) : transaction unit =
-      return {}
   end
 
 and groups_list {} : transaction page =
