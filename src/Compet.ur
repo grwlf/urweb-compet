@@ -951,19 +951,34 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
   let
   template (X.run(
 
-    o <- mkosd {};
+    qpat <- return ("%"^q^"%");
 
-    push_back_xml <xml><h2>Search</h2></xml>;
+    compet_caption_ cid "Register";
+    compet_pills (url(compet_register cid)) cid;
+
+    o <- mkosd {};
+    push_back_xml <xml><h4>Search</h4></xml>;
+
+    s <- X.source q;
+    push_back_xml
+    <xml>
+    <p>
+    <ctextbox source={s}/>
+    <button value="Search" onclick={fn _ =>
+      q <- get s;
+      redirect(url(sportsmen_search cid gid q))
+    }/>
+    </p>
+    </xml>;
 
     push_back( tnest (
       push_back_xml
       <xml><tr>
         <th>Name</th>
         <th>Birth</th>
-        <th>Bow</th>
         <th>Rank</th>
         <th>Club</th>
-        <th></th>
+        <th>Add?</th>
       </tr></xml>;
 
       X.query_ (
@@ -974,7 +989,8 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
             FROM compet_sportsmen AS CS
             WHERE CS.CId = {[cid]} AND CS.GId = {[gid]} ) AS CS
         ON CS.SId = S.Id
-        WHERE S.SName LIKE {["%"^q^"%"]}
+        WHERE (S.SName LIKE {[qpat]}) OR (S.Club LIKE {[qpat]}) OR
+          (S.Birth LIKE {[qpat]}) OR (S.Rank LIKE {[qpat]})
       )
       (fn fs =>
 
@@ -986,6 +1002,8 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
         <xml><tr>
           <td>{[fs.S.SName]}</td>
           <td>{[fs.S.Birth]}</td>
+          <td>{[fs.S.Rank]}</td>
+          <td>{[fs.S.Club]}</td>
           <td>
           <ccheckbox source={s} onchange={
             v <- get s;
