@@ -252,8 +252,11 @@ table compet_groups : ([CId = int, GId = int])
   CONSTRAINT CG_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CG_G FOREIGN KEY (GId) REFERENCES groups (Id) ON DELETE CASCADE ON UPDATE RESTRICT
 
-table compet_sportsmen : ([CId = int, SId = int, GId = int] ++ sportsmen_base ++ [Target = string])
-  PRIMARY KEY (CId, SId, GId),
+sequence csSeq
+
+table compet_sportsmen : ([Id = int, CId = int, SId = int, GId = int, Num = int] ++ sportsmen_base ++ [Target = string])
+  PRIMARY KEY (Id),
+  CONSTRAINT CS_U UNIQUE (CId, SId, GId),
   CONSTRAINT CS_S FOREIGN KEY (SId) REFERENCES sportsmen (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CS_C FOREIGN KEY (CId) REFERENCES compet (Id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT CS_G FOREIGN KEY (GId) REFERENCES groups (Id) ON DELETE CASCADE ON UPDATE RESTRICT
@@ -275,9 +278,10 @@ fun sportsmen_new_ fs =
   return i
 
 fun compet_register_ cid sid gid : transaction {} =
+  i <- nextval csSeq;
   u <- oneRow1(SELECT * FROM sportsmen AS U WHERE U.Id = {[sid]});
-  dml(INSERT INTO compet_sportsmen (CId, SId, GId, SName, Sex, Bow, Birth, Club, Rank, Target)
-      VALUES ({[cid]}, {[u.Id]}, {[gid]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
+  dml(INSERT INTO compet_sportsmen (Id, CId, SId, GId, Num, SName, Sex, Bow, Birth, Club, Rank, Target)
+      VALUES ({[i]}, {[cid]}, {[u.Id]}, {[gid]}, {[i]}, {[u.SName]}, {[u.Sex]}, {[u.Bow]}, {[u.Birth]}, {[u.Club]}, {[u.Rank]}, ""));
   dml(INSERT INTO scores (CId, SId, GId, Round, Score) VALUES ({[cid]}, {[u.Id]}, {[gid]}, 0, 0));
   dml(INSERT INTO scores (CId, SId, GId, Round, Score) VALUES ({[cid]}, {[u.Id]}, {[gid]}, 1, 0));
   _ <- tryDml(INSERT INTO compet_groups (CId,GId) VALUES({[cid]}, {[gid]}));
@@ -458,7 +462,7 @@ and compet_grps cid =
   let
     me <- currentUrl;
     template ( X.run (
-      
+
       compet_caption_ cid "Groups";
 
       compet_pills me cid;
@@ -747,9 +751,15 @@ and compet_register cid =
         push_back_xml
         <xml><h3>{[fs.G.GName]}</h3></xml>;
 
+        ch <- X.source [];
+        dragged <- X.source None;
+
         push_back ( tnest (
           push_back_xml
           <xml><tr>
+            <th/>
+            <th/>
+            <th/>
             <th>Name</th>
             <th>Birth</th>
             <th>Bow</th>
@@ -757,15 +767,52 @@ and compet_register cid =
             <th></th>
           </tr></xml>;
 
-          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[gid]})
+          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[gid]}
+            ORDER BY CS.Num)
           (fn fs =>
-            push_back_xml
-            <xml><tr>
+            nd <- return fs.CS.Num;
+
+            d <- X.source (fs.CS.Id,
+            <xml>
+              <td>{[fs.CS.Id]}</td>
+              <td>{[fs.CS.Num]}</td>
               <td>{[fs.CS.SName]}</td>
               <td>{[fs.CS.Birth]}</td>
               <td>{[fs.CS.Bow]}</td>
               <td>{[fs.CS.Club]}</td>
               <td><a link={registered_details cid fs.CS.SId}>[Details]</a></td>
+            </xml>);
+
+            push_back_xml
+            <xml><tr
+            onmouseup={fn _ =>set dragged None; l<-get ch; rpc(compet_reorder l)}
+            (* onmouseup={fn _ =>set dragged None; l<-get ch; alert(show(l))} *)
+            onmouseover={fn _ =>
+                o <- get dragged;
+                (case o of
+                  |None => return {}
+                  |Some (ns,s) =>
+                    (es,src) <- get s;
+                    (ed,dst) <- get d;
+
+                    if ns <> nd then
+                      set s (ed,dst);
+                      set d (es,src);
+                      set dragged (Some (nd,d));
+
+                      l <- get ch;
+                      l <- return (P.insert ed ns l);
+                      l <- return (P.insert es nd l);
+                      set ch l
+                    else
+                      return {}
+                )
+              }
+            >
+            <td
+            onmousedown={fn _ =>set dragged (Some (fs.CS.Num,d))}
+            ><span class={cl (B.glyphicon :: B.glyphicon_chevron_up ::[])}/></td>
+            <dyn signal={(_,dst) <- signal d; return dst}/>
             </tr></xml>
          )
 
@@ -773,40 +820,19 @@ and compet_register cid =
 
         push_back_xml
         <xml>
-          <button value="Add" onclick={fn _ =>
+          <button value="Edit" onclick={fn _ =>
             redirect(url(sportsmen_search cid gid ""))
           }/>
         </xml>
       )
-
-
-      (* ss <- X.source ""; *)
-      (* ss2 <- X.source []; *)
-      (* push_back_xml *)
-      (* <xml><div> *)
-      (*   <ctextbox source={ss}/> *)
-      (*   <button value="Search" onclick={fn _ => *)
-      (*     v <- get ss; *)
-      (*     ls <- rpc (sportsmen_search cid v); *)
-      (*     set ss2 ls *)
-      (*   }/> *)
-      (*   <dyn signal={ *)
-      (*     l <- signal ss2; *)
-      (*     return (swap List.mapX l (fn x => *)
-      (*       <xml> *)
-      (*         <br/> *)
-      (*         <button value="Register" onclick={fn _ => *)
-      (*           rpc (compet_register_ cid x.Id); *)
-      (*           redirect (url (compet_register cid)) *)
-      (*         }/> *)
-      (*         {[x.SName]} ({[x.Birth]}) *)
-      (*       </xml> *)
-      (*       )) *)
-      (*    }/> *)
-      (* </div></xml> *)
     ))
-
   where
+    fun compet_reorder (l:list (int*int)) : transaction {} =
+      P.forM_ l (fn (id,num) =>
+        dml(UPDATE compet_sportsmen SET Num={[num]} WHERE Id={[id]})
+      );
+      queryI(SELECT * FROM compet_sportsmen AS CS) (fn r =>
+        debug ("CS: Num " ^(show r.CS.Num) ^ " Id " ^ (show r.CS.Id)))
   end
 
 and complist_caption cap =
@@ -951,13 +977,23 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
   let
   template (X.run(
 
+    cn <- lift(oneRowE1 (SELECT C.CName AS N FROM compet AS C WHERE C.Id = {[cid]}));
+    gn <- lift(oneRowE1 (SELECT G.GName AS N FROM groups AS G WHERE G.Id = {[gid]}));
+
+    push_back_xml
+    <xml>
+    <ol class={B.breadcrumb}>
+    <li><a link={complist_view {}}>Competitions</a></li>
+    <li><a link={compet_register cid}>Register</a></li>
+    <li class={B.active}>{[gn]}</li>
+    </ol>
+    </xml>;
+
     qpat <- return ("%"^q^"%");
 
-    compet_caption_ cid "Register";
-    compet_pills (url(compet_register cid)) cid;
+    compet_caption_ cid gn;
 
     o <- mkosd {};
-    push_back_xml <xml><h4>Search</h4></xml>;
 
     s <- X.source q;
     push_back_xml
@@ -974,11 +1010,11 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
     push_back( tnest (
       push_back_xml
       <xml><tr>
+        <th>Registered</th>
         <th>Name</th>
         <th>Birth</th>
         <th>Rank</th>
         <th>Club</th>
-        <th>Add?</th>
       </tr></xml>;
 
       X.query_ (
@@ -991,6 +1027,7 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
         ON CS.SId = S.Id
         WHERE (S.SName LIKE {[qpat]}) OR (S.Club LIKE {[qpat]}) OR
           (S.Birth LIKE {[qpat]}) OR (S.Rank LIKE {[qpat]})
+        ORDER BY S.SName
       )
       (fn fs =>
 
@@ -1000,10 +1037,6 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
 
         push_back_xml
         <xml><tr>
-          <td>{[fs.S.SName]}</td>
-          <td>{[fs.S.Birth]}</td>
-          <td>{[fs.S.Rank]}</td>
-          <td>{[fs.S.Club]}</td>
           <td>
           <ccheckbox source={s} onchange={
             v <- get s;
@@ -1012,6 +1045,10 @@ and sportsmen_search (cid:int) (gid:int) (q:string) : transaction page =
               |False => osdRpc_ o (tryRpc(compet_unregister_group_ cid sid gid))
           }/>
           </td>
+          <td>{[fs.S.SName]}</td>
+          <td>{[fs.S.Birth]}</td>
+          <td>{[fs.S.Rank]}</td>
+          <td>{[fs.S.Club]}</td>
         </tr></xml>
 
       )

@@ -64,6 +64,18 @@ fun strlist (s:string) : list char =
   end
 
 
+fun dropBy  [t ::: Type] (f:t -> bool) (l : list t) : list t =
+  case l of
+    |[] => []
+    |(x :: ls) => if f x then dropBy f ls else x :: (dropBy f ls)
+
+fun insert  [a ::: Type] [b ::: Type] (_:eq a) (x:a) (y:b) (l : list (a*b)) : list (a*b) =
+  (x,y) :: dropBy (fn (x',_) => x' = x) l
+
+
+fun delete  [a ::: Type] [b ::: Type] (_:eq a) (x:a) (l : list (a*b)) : list (a*b) =
+  dropBy (fn (x',_) => x' = x) l
+
 (*
 
  __  __                       _ 
@@ -111,5 +123,10 @@ fun swap [a:::Type] [b:::Type] [c:::Type] (f:a->b->c) (y:b) (z:a) : c = f z y
 (* val show_pair [a] [b] [show a] [show b] : show (a*b) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")") *)
 
 val show_int_string  : show (int*string) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")")
+val show_int_int  : show (int*int) = mkShow (fn (a,b) => "("^(show a) ^ "," ^ (show b) ^ ")")
 
+val show_opt_int_int  : show (option (int*int)) = mkShow (fn o =>
+  case o of
+    |Some (a,b) => "Some ("^(show a) ^ "," ^ (show b) ^ ")"
+    |None => "None")
 
