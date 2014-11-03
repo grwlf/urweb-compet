@@ -24,7 +24,7 @@ dropdb: ./Compet.db ./Makefile
 	psql -f ./Compet.sql Compet
 	touch ./Compet.db
 ./Compet.exe: .fix-multy1
-./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/Prelude.ur ./src/StyleSoup.ur ./src/XmlGen.ur .cake3/tmp__Compet_in autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
+./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/DragTable.ur ./src/Prelude.ur ./src/StyleSoup.ur ./src/XmlGen.ur .cake3/tmp__Compet_in autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
 	cat .cake3/tmp__Compet_in > ./Compet.urp
 .cake3/tmp__Compet_in: ./Makefile
 	-rm -rf .cake3/tmp__Compet_in
@@ -59,6 +59,7 @@ dropdb: ./Compet.db ./Makefile
 	echo './src/XmlGen' >> .cake3/tmp__Compet_in
 	echo 'autogen/Compet_css' >> .cake3/tmp__Compet_in
 	echo './src/StyleSoup' >> .cake3/tmp__Compet_in
+	echo './src/DragTable' >> .cake3/tmp__Compet_in
 	echo './src/Compet' >> .cake3/tmp__Compet_in
 ./Compet.sql: .fix-multy1
 .INTERMEDIATE: .fix-multy1

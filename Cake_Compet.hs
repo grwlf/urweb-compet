@@ -31,6 +31,7 @@ theapp bootstrap monadpack = do
     ur (single (file "src/XmlGen.ur"))
     bin (file "src/Compet.css") [NoScan]
     ur (single (file "src/StyleSoup.ur"))
+    ur (single (file "src/DragTable.ur"))
     ur (pair (file "src/Compet.ur"))
 
 

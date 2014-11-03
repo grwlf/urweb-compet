@@ -4,6 +4,7 @@ structure P = Prelude
 structure CSS = CSS
 structure Str = String
 structure O = Option
+structure DT = DragTable
 
 val isSome = O.isSome
 
@@ -751,28 +752,24 @@ and compet_register cid =
         push_back_xml
         <xml><h3>{[fs.G.GName]}</h3></xml>;
 
-        ch <- X.source [];
-        dragged <- X.source None;
+        push_back ( DT.tnest {OnReorder = fn l => rpc(compet_reorder l)} (fn mkhdr mkrow =>
 
-        push_back ( tnest (
-          push_back_xml
-          <xml><tr>
+          mkhdr
+          <xml>
             <th/>
-            <th/>
-            <th/>
+            <th>Id</th>
+            <th>Num</th>
             <th>Name</th>
             <th>Birth</th>
             <th>Bow</th>
             <th>Club</th>
             <th></th>
-          </tr></xml>;
+          </xml>;
 
-          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[gid]}
-            ORDER BY CS.Num)
+          X.query_ (SELECT * FROM compet_sportsmen AS CS WHERE CS.CId = {[cid]} AND CS.GId = {[gid]} ORDER BY CS.Num)
           (fn fs =>
-            nd <- return fs.CS.Num;
 
-            d <- X.source (fs.CS.Id,
+            mkrow fs.CS.Id fs.CS.Num 
             <xml>
               <td>{[fs.CS.Id]}</td>
               <td>{[fs.CS.Num]}</td>
@@ -781,39 +778,9 @@ and compet_register cid =
               <td>{[fs.CS.Bow]}</td>
               <td>{[fs.CS.Club]}</td>
               <td><a link={registered_details cid fs.CS.SId}>[Details]</a></td>
-            </xml>);
+            </xml>;
 
-            push_back_xml
-            <xml><tr
-            onmouseup={fn _ =>set dragged None; l<-get ch; rpc(compet_reorder l)}
-            (* onmouseup={fn _ =>set dragged None; l<-get ch; alert(show(l))} *)
-            onmouseover={fn _ =>
-                o <- get dragged;
-                (case o of
-                  |None => return {}
-                  |Some (ns,s) =>
-                    (es,src) <- get s;
-                    (ed,dst) <- get d;
-
-                    if ns <> nd then
-                      set s (ed,dst);
-                      set d (es,src);
-                      set dragged (Some (nd,d));
-
-                      l <- get ch;
-                      l <- return (P.insert ed ns l);
-                      l <- return (P.insert es nd l);
-                      set ch l
-                    else
-                      return {}
-                )
-              }
-            >
-            <td
-            onmousedown={fn _ =>set dragged (Some (fs.CS.Num,d))}
-            ><span class={cl (B.glyphicon :: B.glyphicon_chevron_up ::[])}/></td>
-            <dyn signal={(_,dst) <- signal d; return dst}/>
-            </tr></xml>
+            return {}
          )
 
         ));
