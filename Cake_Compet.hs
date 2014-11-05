@@ -3,9 +3,10 @@ module Cake_Compet where
 
 import Development.Cake3
 import Development.Cake3.Ext.UrWeb
+import qualified Cake_Prelude as Prelude hiding(main)
 import Cake_Compet_P
 
-theapp bootstrap monadpack = do
+theapp prelude bootstrap monadpack = do
   let pn = file "Compet.urp"
   uwapp "-dbms postgres" pn $ do
     allow mime "text/javascript";
@@ -24,10 +25,11 @@ theapp bootstrap monadpack = do
     sql (pn.="sql")
     bootstrap
     monadpack
+    prelude
     ur (sys "list")
     ur (sys "string")
     ur (sys "option")
-    ur (single (file "src/Prelude.ur"))
+    -- ur (single (file "src/Prelude.ur"))
     ur (single (file "src/XmlGen.ur"))
     bin (file "src/Compet.css") [NoScan]
     ur (single (file "src/StyleSoup.ur"))
@@ -36,7 +38,9 @@ theapp bootstrap monadpack = do
 
 
 main = writeMake (file "Makefile") $ do
+  p <- Prelude.thelib
   a <- theapp
+    (library p)
     (library' (externalMakeTarget (file "lib/uru3/Bootstrap/lib.urp") "lib"))
     (library' (externalMakeTarget (file "lib/urweb-monad-pack/lib.urp") "lib"))
   db <- rule $ do

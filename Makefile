@@ -24,7 +24,7 @@ dropdb: ./Compet.db ./Makefile
 	psql -f ./Compet.sql Compet
 	touch ./Compet.db
 ./Compet.exe: .fix-multy1
-./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/DragTable.ur ./src/Prelude.ur ./src/StyleSoup.ur ./src/XmlGen.ur .cake3/tmp__Compet_in autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
+./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./lib/urweb-prelude/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/DragTable.ur ./src/StyleSoup.ur ./src/XmlGen.ur .cake3/tmp__Compet_in autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
 	cat .cake3/tmp__Compet_in > ./Compet.urp
 .cake3/tmp__Compet_in: ./Makefile
 	-rm -rf .cake3/tmp__Compet_in
@@ -44,6 +44,7 @@ dropdb: ./Compet.db ./Makefile
 	echo 'sql ./Compet.sql' >> .cake3/tmp__Compet_in
 	echo 'library ./lib/uru3/Bootstrap' >> .cake3/tmp__Compet_in
 	echo 'library ./lib/urweb-monad-pack' >> .cake3/tmp__Compet_in
+	echo 'library ./lib/urweb-prelude' >> .cake3/tmp__Compet_in
 	echo 'include autogen/Compet_css_c.h' >> .cake3/tmp__Compet_in
 	echo 'link autogen/Compet_css_c.o' >> .cake3/tmp__Compet_in
 	echo 'ffi autogen/Compet_css_c' >> .cake3/tmp__Compet_in
@@ -55,12 +56,18 @@ dropdb: ./Compet.db ./Makefile
 	echo '$$/list' >> .cake3/tmp__Compet_in
 	echo '$$/string' >> .cake3/tmp__Compet_in
 	echo '$$/option' >> .cake3/tmp__Compet_in
-	echo './src/Prelude' >> .cake3/tmp__Compet_in
 	echo './src/XmlGen' >> .cake3/tmp__Compet_in
 	echo 'autogen/Compet_css' >> .cake3/tmp__Compet_in
 	echo './src/StyleSoup' >> .cake3/tmp__Compet_in
 	echo './src/DragTable' >> .cake3/tmp__Compet_in
 	echo './src/Compet' >> .cake3/tmp__Compet_in
+./lib/urweb-prelude/lib.urp: ./Makefile ./lib/urweb-prelude/src/Prelude.ur .cake3/tmp__liburweb-preludelib_in
+	cat .cake3/tmp__liburweb-preludelib_in > ./lib/urweb-prelude/lib.urp
+.cake3/tmp__liburweb-preludelib_in: ./Makefile
+	-rm -rf .cake3/tmp__liburweb-preludelib_in
+	echo '' >> .cake3/tmp__liburweb-preludelib_in
+	echo '$$/list' >> .cake3/tmp__liburweb-preludelib_in
+	echo '../.././lib/urweb-prelude/src/Prelude' >> .cake3/tmp__liburweb-preludelib_in
 ./Compet.sql: .fix-multy1
 .INTERMEDIATE: .fix-multy1
 .fix-multy1: ./Compet.urp ./Makefile $(call GUARD,URVERSION)
@@ -100,6 +107,10 @@ dropdb: .fix-multy1
 ./Compet.urp: .fix-multy1
 .PHONY: .cake3/tmp__Compet_in
 .cake3/tmp__Compet_in: .fix-multy1
+.PHONY: ./lib/urweb-prelude/lib.urp
+./lib/urweb-prelude/lib.urp: .fix-multy1
+.PHONY: .cake3/tmp__liburweb-preludelib_in
+.cake3/tmp__liburweb-preludelib_in: .fix-multy1
 .PHONY: ./Compet.sql
 ./Compet.sql: .fix-multy1
 .INTERMEDIATE: .fix-multy1
@@ -114,7 +125,7 @@ autogen/Compet_css_c.o: .fix-multy1
 endif
 .PHONY: clean
 clean: 
-	-rm ./Compet.db ./Compet.exe ./Compet.sql ./Compet.urp .cake3/tmp__Compet_in autogen/Compet_css_c.o
+	-rm ./Compet.db ./Compet.exe ./Compet.sql ./Compet.urp ./lib/urweb-prelude/lib.urp .cake3/tmp__Compet_in .cake3/tmp__liburweb-preludelib_in autogen/Compet_css_c.o
 	-rm -rf .cake3
 
 endif
