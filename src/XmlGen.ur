@@ -8,6 +8,10 @@ val lift = @@MT.lift
 fun source [st:::Type] [t:::Type] (x:t) : MT.state st (source t) =
   MT.lift (Basis.source x)
 
+fun sourceM [st:::Type] [t:::Type] (m:MT.state st t) : MT.state st (source t) =
+  x <- m ;
+  MT.lift (Basis.source x)
+
 fun run (s : MT.state xbody {}) : transaction xbody =
   (x,_) <- MT.run <xml/> s;
   return x

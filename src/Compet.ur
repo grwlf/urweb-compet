@@ -752,12 +752,39 @@ and compet_register cid =
         push_back_xml
         <xml><h3>{[fs.G.GName]}</h3></xml>;
 
-        push_back ( DT.tnest {OnReorder = fn l => rpc(compet_reorder l)} (fn mkhdr mkrow =>
+        push_back_ (lift(compet_register_mk 1 gid));
 
+        (* push_back_xml *)
+        (* <xml> *)
+        (*   <button value="Edit" onclick={fn _ => *)
+        (*     rpc(compet_register_ cid 63 gid); *)
+        (*     sx' <- rpc(compet_register_mk gid); *)
+        (*     x' <- get sx'; *)
+        (*     set sx x' *)
+        (*     (1* redirect(url(sportsmen_search cid gid "")) *1) *)
+        (*   }/> *)
+        (* </xml> *)
+        return {}
+      )
+    ))
+  where
+
+    fun compet_reorder (l:list (int*int)) : transaction {} =
+      P.forM_ l (fn (id,num) =>
+        dml(UPDATE compet_sportsmen SET Num={[num]} WHERE Id={[id]})
+      );
+      (* queryI(SELECT * FROM compet_sportsmen AS CS) (fn r => *)
+      (*   debug ("CS: Num " ^(show r.CS.Num) ^ " Id " ^ (show r.CS.Id))) *)
+      return {}
+
+    fun compet_register_mk i (gid:int) : transaction xbody =
+      sx <- source <xml/>;
+      x <- X.run (
+        push_back ( DT.tnest {OnReorder = fn l => rpc(compet_reorder l)} (fn mkhdr mkrow =>
           mkhdr
           <xml>
             <th/>
-            <th>Id</th>
+            <th>Id ({[i]})</th>
             <th>Num</th>
             <th>Name</th>
             <th>Birth</th>
@@ -781,25 +808,32 @@ and compet_register cid =
             </xml>;
 
             return {}
-         )
+          );
 
+          push_back_xml
+          <xml><tr>
+            <td colspan=8 style="border-top:none">
+              <div style="border:1pt dashed black; border-radius:2pt;
+              text-align:center; cursor:pointer"
+                onclick={fn _ =>
+                  (* rpc(compet_register_ cid 63 gid); *)
+                  alert("Regenerating! " ^ (show i));
+                  x' <- rpc(compet_register_mk (i+1) gid);
+                  set sx x';
+                  (* redirect(url(sportsmen_search cid gid "")) *)
+                  return {}
+                }>
+                Add
+              </div>
+            </td>
+          </tr></xml>
         ));
-
-        push_back_xml
-        <xml>
-          <button value="Edit" onclick={fn _ =>
-            redirect(url(sportsmen_search cid gid ""))
-          }/>
-        </xml>
-      )
-    ))
-  where
-    fun compet_reorder (l:list (int*int)) : transaction {} =
-      P.forM_ l (fn (id,num) =>
-        dml(UPDATE compet_sportsmen SET Num={[num]} WHERE Id={[id]})
+        return {}
       );
-      queryI(SELECT * FROM compet_sportsmen AS CS) (fn r =>
-        debug ("CS: Num " ^(show r.CS.Num) ^ " Id " ^ (show r.CS.Id)))
+      set sx x;
+      return <xml>
+        <dyn signal={signal sx}/>
+      </xml>
   end
 
 and complist_caption cap =
