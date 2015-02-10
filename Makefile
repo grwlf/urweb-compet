@@ -8,83 +8,302 @@ unexport MAIN
 
 # Main section
 
-URCC = $(shell $(shell urweb -print-ccompiler) -print-prog-name=gcc)
-URINCL = -I$(shell urweb -print-cinclude) 
 URVERSION = $(shell urweb -version)
-.PHONY: all
-all: ./Compet.exe ./Compet.sql ./Makefile
-.PHONY: tc
-tc: ./Makefile
+UR_CC = $(shell $(shell urweb -print-ccompiler) -print-prog-name=gcc)
+UR_INCL = -I$(shell urweb -print-cinclude) 
+.PHONY: ./all
+./all: ./Makefile ./Compet.exe ./Compet.sql
+./.cake3/tmp___Compet_in_2: ./Makefile ./.cake3/tmp___src_Compet_css_patch ./autogen/Compet_css.ur ./autogen/Compet_css_c.c ./autogen/Compet_css_c.h ./autogen/Compet_css_c.o ./autogen/Compet_css_c.urs ./src/Compet.ur ./src/Compet.urs ./src/DragTable.ur ./src/StyleSoup.ur ./src/XmlGen.ur ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./lib/urweb-prelude/lib.urp
+	( \
+	echo   ;\
+	echo $$\/list  ;\
+	echo $$\/string  ;\
+	echo $$\/option  ;\
+	echo \.\/src\/XmlGen  ;\
+	echo \.\/autogen\/Compet\_css  ;\
+	echo \.\/src\/StyleSoup  ;\
+	echo \.\/src\/DragTable  ;\
+	echo \.\/src\/Compet  ;\
+	) > ./.cake3/tmp___Compet_in_2
+./.cake3/tmp___Compet_in_1: ./Makefile ./.cake3/tmp___src_Compet_css_patch ./autogen/Compet_css.ur ./autogen/Compet_css_c.c ./autogen/Compet_css_c.h ./autogen/Compet_css_c.o ./autogen/Compet_css_c.urs ./src/Compet.ur ./src/Compet.urs ./src/DragTable.ur ./src/StyleSoup.ur ./src/XmlGen.ur ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./lib/urweb-prelude/lib.urp
+	( \
+	echo allow\ mime\ text\/javascript  ;\
+	echo allow\ mime\ text\/css  ;\
+	echo allow\ mime\ image\/jpeg  ;\
+	echo allow\ mime\ image\/png  ;\
+	echo allow\ mime\ image\/gif  ;\
+	echo allow\ mime\ application\/octet\-stream  ;\
+	echo allow\ url\ \/Compet\/\*  ;\
+	echo allow\ url\ http\:\/\/github\.com\*  ;\
+	echo allow\ url\ http\:\/\/impredicative\.com\*  ;\
+	echo allow\ url\ http\:\/\/hit\.msk\.ru\*  ;\
+	echo database\ dbname\=Compet  ;\
+	echo safeGet\ Compet\/main  ;\
+	echo safeGet\ Compet\/init  ;\
+	echo sql\ \.\/Compet\.sql  ;\
+	echo library\ \.\/lib\/urweb\-prelude\/  ;\
+	echo library\ \.\/lib\/uru3\/Bootstrap\/  ;\
+	echo library\ \.\/lib\/urweb\-monad\-pack\/  ;\
+	echo ffi\ \.\/autogen\/Compet\_css\_c  ;\
+	echo include\ \.\/autogen\/Compet\_css\_c\.h  ;\
+	echo link\ \.\/autogen\/Compet\_css\_c\.o  ;\
+	) > ./.cake3/tmp___Compet_in_1
+./.cake3/tmp___lib_urweb_monad_pack_lib_in_2: ./Makefile ./lib/urweb-monad-pack/error.ur ./lib/urweb-monad-pack/identity.ur ./lib/urweb-monad-pack/pure.ur ./lib/urweb-monad-pack/state.ur
+	( \
+	echo   ;\
+	echo \.\/error  ;\
+	echo \.\/state  ;\
+	echo \.\/identity  ;\
+	echo \.\/pure  ;\
+	) > ./.cake3/tmp___lib_urweb_monad_pack_lib_in_2
+./.cake3/tmp___lib_urweb_monad_pack_lib_in_1: ./Makefile ./lib/urweb-monad-pack/error.ur ./lib/urweb-monad-pack/identity.ur ./lib/urweb-monad-pack/pure.ur ./lib/urweb-monad-pack/state.ur
+	echo -n > ./.cake3/tmp___lib_urweb_monad_pack_lib_in_1
+./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch ./lib/uru3/Bootstrap/Bootstrap.ur ./lib/uru3/Bootstrap/Bootstrap.urs ./lib/uru3/Bootstrap/FormSignin.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs ./lib/uru3/JQuery/lib.urp ./lib/uru3/Uru/lib.urp
+	( \
+	echo   ;\
+	echo \.\/autogen\/glyphicons\_halflings\_regular\_eot  ;\
+	echo \.\/autogen\/glyphicons\_halflings\_regular\_svg  ;\
+	echo \.\/autogen\/glyphicons\_halflings\_regular\_ttf  ;\
+	echo \.\/autogen\/glyphicons\_halflings\_regular\_woff  ;\
+	echo \.\/autogen\/bootstrap\_css  ;\
+	echo \.\/autogen\/bootstrap\_theme\_css  ;\
+	echo \.\/autogen\/bootstrap\_min\_js  ;\
+	echo \.\/autogen\/Tooltip\_js  ;\
+	echo \.\/autogen\/FormSignin\_css  ;\
+	echo \.\/Bootstrap  ;\
+	echo \.\/FormSignin  ;\
+	) > ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2
+./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch ./lib/uru3/Bootstrap/Bootstrap.ur ./lib/uru3/Bootstrap/Bootstrap.urs ./lib/uru3/Bootstrap/FormSignin.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs ./lib/uru3/JQuery/lib.urp ./lib/uru3/Uru/lib.urp
+	( \
+	echo rewrite\ style\ Bootstrap\/bs3\_table\ table  ;\
+	echo rewrite\ style\ Bootstrap\/\*\ \[\-\]  ;\
+	echo ffi\ \.\/NavTag  ;\
+	echo library\ \.\.\/\.\.\/\.\.\/lib\/uru3\/JQuery\/  ;\
+	echo library\ \.\.\/\.\.\/\.\.\/lib\/uru3\/Uru\/  ;\
+	echo ffi\ \.\/autogen\/glyphicons\_halflings\_regular\_eot\_c  ;\
+	echo include\ \.\/autogen\/glyphicons\_halflings\_regular\_eot\_c\.h  ;\
+	echo link\ \.\/autogen\/glyphicons\_halflings\_regular\_eot\_c\.o  ;\
+	echo ffi\ \.\/autogen\/glyphicons\_halflings\_regular\_svg\_c  ;\
+	echo include\ \.\/autogen\/glyphicons\_halflings\_regular\_svg\_c\.h  ;\
+	echo link\ \.\/autogen\/glyphicons\_halflings\_regular\_svg\_c\.o  ;\
+	echo ffi\ \.\/autogen\/glyphicons\_halflings\_regular\_ttf\_c  ;\
+	echo include\ \.\/autogen\/glyphicons\_halflings\_regular\_ttf\_c\.h  ;\
+	echo link\ \.\/autogen\/glyphicons\_halflings\_regular\_ttf\_c\.o  ;\
+	echo ffi\ \.\/autogen\/glyphicons\_halflings\_regular\_woff\_c  ;\
+	echo include\ \.\/autogen\/glyphicons\_halflings\_regular\_woff\_c\.h  ;\
+	echo link\ \.\/autogen\/glyphicons\_halflings\_regular\_woff\_c\.o  ;\
+	echo ffi\ \.\/autogen\/bootstrap\_css\_c  ;\
+	echo include\ \.\/autogen\/bootstrap\_css\_c\.h  ;\
+	echo link\ \.\/autogen\/bootstrap\_css\_c\.o  ;\
+	echo ffi\ \.\/autogen\/bootstrap\_theme\_css\_c  ;\
+	echo include\ \.\/autogen\/bootstrap\_theme\_css\_c\.h  ;\
+	echo link\ \.\/autogen\/bootstrap\_theme\_css\_c\.o  ;\
+	echo ffi\ \.\/autogen\/bootstrap\_min\_js\_c  ;\
+	echo include\ \.\/autogen\/bootstrap\_min\_js\_c\.h  ;\
+	echo link\ \.\/autogen\/bootstrap\_min\_js\_c\.o  ;\
+	echo ffi\ \.\/autogen\/Tooltip\_js\_js  ;\
+	echo ffi\ \.\/autogen\/Tooltip\_js\_c  ;\
+	echo include\ \.\/autogen\/Tooltip\_js\_c\.h  ;\
+	echo link\ \.\/autogen\/Tooltip\_js\_c\.o  ;\
+	echo ffi\ \.\/autogen\/FormSignin\_css\_c  ;\
+	echo include\ \.\/autogen\/FormSignin\_css\_c\.h  ;\
+	echo link\ \.\/autogen\/FormSignin\_css\_c\.o  ;\
+	echo safeGet\ Tooltip\_js\/enable\_tooltips  ;\
+	) > ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1
+./.cake3/tmp___lib_uru3_Uru_lib_in_2: ./Makefile ./lib/uru3/Uru/CSS.ur ./lib/uru3/Uru/CSS.urs ./lib/uru3/Uru/Script.h ./lib/uru3/Uru/Script.o ./lib/uru3/Uru/Uru.ur ./lib/uru3/Uru/Uru.urs
+	( \
+	echo   ;\
+	echo $$\/list  ;\
+	echo \.\/CSS  ;\
+	echo \.\/Uru  ;\
+	) > ./.cake3/tmp___lib_uru3_Uru_lib_in_2
+./.cake3/tmp___lib_uru3_Uru_lib_in_1: ./Makefile ./lib/uru3/Uru/CSS.ur ./lib/uru3/Uru/CSS.urs ./lib/uru3/Uru/Script.h ./lib/uru3/Uru/Script.o ./lib/uru3/Uru/Uru.ur ./lib/uru3/Uru/Uru.urs
+	( \
+	echo ffi\ \.\/Script  ;\
+	echo include\ \.\/Script\.h  ;\
+	echo link\ \.\/Script\.o  ;\
+	) > ./.cake3/tmp___lib_uru3_Uru_lib_in_1
+./.cake3/tmp___lib_uru3_JQuery_lib_in_2: ./Makefile ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch ./lib/uru3/JQuery/JQuery.ur ./lib/uru3/JQuery/JQuery.urs ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs ./lib/uru3/Uru/lib.urp
+	( \
+	echo   ;\
+	echo \.\/autogen\/jquery\_1\_9\_1\_js  ;\
+	echo \.\/JQuery  ;\
+	) > ./.cake3/tmp___lib_uru3_JQuery_lib_in_2
+./.cake3/tmp___lib_uru3_JQuery_lib_in_1: ./Makefile ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch ./lib/uru3/JQuery/JQuery.ur ./lib/uru3/JQuery/JQuery.urs ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs ./lib/uru3/Uru/lib.urp
+	( \
+	echo library\ \.\.\/\.\.\/\.\.\/lib\/uru3\/Uru\/  ;\
+	echo ffi\ \.\/autogen\/jquery\_1\_9\_1\_js\_c  ;\
+	echo include\ \.\/autogen\/jquery\_1\_9\_1\_js\_c\.h  ;\
+	echo link\ \.\/autogen\/jquery\_1\_9\_1\_js\_c\.o  ;\
+	) > ./.cake3/tmp___lib_uru3_JQuery_lib_in_1
+./.cake3/tmp___lib_urweb_prelude_lib_in_2: ./Makefile ./lib/urweb-prelude/src/Prelude.ur
+	( \
+	echo   ;\
+	echo $$\/list  ;\
+	echo \.\/src\/Prelude  ;\
+	) > ./.cake3/tmp___lib_urweb_prelude_lib_in_2
+./.cake3/tmp___lib_urweb_prelude_lib_in_1: ./Makefile ./lib/urweb-prelude/src/Prelude.ur
+	echo -n > ./.cake3/tmp___lib_urweb_prelude_lib_in_1
+.PHONY: ./tc
+./tc: ./Makefile
 	urweb -tc Compet
-.PHONY: dropdb
-dropdb: ./Compet.db ./Makefile
-./Compet.db: ./Compet.exe ./Compet.sql ./Makefile
+.PHONY: ./dropdb
+./dropdb: ./Makefile ./Compet.db
+./Compet.db: ./Makefile ./Compet.exe ./Compet.sql
 	dropdb --if-exists Compet
 	createdb Compet
 	psql -f ./Compet.sql Compet
 	touch ./Compet.db
-./Compet.exe: .fix-multy1
-./Compet.urp: ./Makefile ./lib/uru3/Bootstrap/lib.urp ./lib/urweb-monad-pack/lib.urp ./lib/urweb-prelude/lib.urp ./src/Compet.ur ./src/Compet.urs ./src/DragTable.ur ./src/StyleSoup.ur ./src/XmlGen.ur .cake3/tmp__Compet_in autogen/Compet_css.ur autogen/Compet_css.urs autogen/Compet_css_c.h autogen/Compet_css_c.o
-	cat .cake3/tmp__Compet_in > ./Compet.urp
-.cake3/tmp__Compet_in: ./Makefile
-	-rm -rf .cake3/tmp__Compet_in
-	echo 'allow mime text/javascript' >> .cake3/tmp__Compet_in
-	echo 'allow mime text/css' >> .cake3/tmp__Compet_in
-	echo 'allow mime image/jpeg' >> .cake3/tmp__Compet_in
-	echo 'allow mime image/png' >> .cake3/tmp__Compet_in
-	echo 'allow mime image/gif' >> .cake3/tmp__Compet_in
-	echo 'allow mime application/octet-stream' >> .cake3/tmp__Compet_in
-	echo 'allow url /Compet/*' >> .cake3/tmp__Compet_in
-	echo 'allow url http://github.com*' >> .cake3/tmp__Compet_in
-	echo 'allow url http://impredicative.com*' >> .cake3/tmp__Compet_in
-	echo 'allow url http://hit.msk.ru*' >> .cake3/tmp__Compet_in
-	echo 'database dbname=Compet' >> .cake3/tmp__Compet_in
-	echo 'safeGet Compet/main' >> .cake3/tmp__Compet_in
-	echo 'safeGet Compet/init' >> .cake3/tmp__Compet_in
-	echo 'sql ./Compet.sql' >> .cake3/tmp__Compet_in
-	echo 'library ./lib/uru3/Bootstrap' >> .cake3/tmp__Compet_in
-	echo 'library ./lib/urweb-monad-pack' >> .cake3/tmp__Compet_in
-	echo 'library ./lib/urweb-prelude' >> .cake3/tmp__Compet_in
-	echo 'include autogen/Compet_css_c.h' >> .cake3/tmp__Compet_in
-	echo 'link autogen/Compet_css_c.o' >> .cake3/tmp__Compet_in
-	echo 'ffi autogen/Compet_css_c' >> .cake3/tmp__Compet_in
-	echo 'ffi autogen/Compet_css_js' >> .cake3/tmp__Compet_in
-	echo 'allow mime text/css' >> .cake3/tmp__Compet_in
-	echo 'safeGet Compet_css/blobpage' >> .cake3/tmp__Compet_in
-	echo 'safeGet Compet_css/blob' >> .cake3/tmp__Compet_in
-	echo '' >> .cake3/tmp__Compet_in
-	echo '$$/list' >> .cake3/tmp__Compet_in
-	echo '$$/string' >> .cake3/tmp__Compet_in
-	echo '$$/option' >> .cake3/tmp__Compet_in
-	echo './src/XmlGen' >> .cake3/tmp__Compet_in
-	echo 'autogen/Compet_css' >> .cake3/tmp__Compet_in
-	echo './src/StyleSoup' >> .cake3/tmp__Compet_in
-	echo './src/DragTable' >> .cake3/tmp__Compet_in
-	echo './src/Compet' >> .cake3/tmp__Compet_in
-./lib/urweb-prelude/lib.urp: ./Makefile ./lib/urweb-prelude/src/Prelude.ur .cake3/tmp__liburweb-preludelib_in
-	cat .cake3/tmp__liburweb-preludelib_in > ./lib/urweb-prelude/lib.urp
-.cake3/tmp__liburweb-preludelib_in: ./Makefile
-	-rm -rf .cake3/tmp__liburweb-preludelib_in
-	echo '' >> .cake3/tmp__liburweb-preludelib_in
-	echo '$$/list' >> .cake3/tmp__liburweb-preludelib_in
-	echo '../.././lib/urweb-prelude/src/Prelude' >> .cake3/tmp__liburweb-preludelib_in
-./Compet.sql: .fix-multy1
-.INTERMEDIATE: .fix-multy1
-.fix-multy1: ./Compet.urp ./Makefile $(call GUARD,URVERSION)
+./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch: ./.fix-multy1
+./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch: ./.fix-multy2
+./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch: ./.fix-multy3
+./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch: ./.fix-multy4
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch: ./.fix-multy5
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch: ./.fix-multy6
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch: ./.fix-multy7
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch: ./.fix-multy8
+./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch: ./.fix-multy9
+./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch: ./.fix-multy10
+./.cake3/tmp___src_Compet_css_patch: ./.fix-multy11
+.INTERMEDIATE: ./.fix-multy1
+./.fix-multy1: ./Makefile ./lib/uru3/Bootstrap/FormSignin.css
+	urembed  -c ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c -H ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h -s ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs -w ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur  ./lib/uru3/Bootstrap/FormSignin.css > ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch
+.INTERMEDIATE: ./.fix-multy10
+./.fix-multy10: ./Makefile ./lib/uru3/JQuery/jquery-1.9.1.js
+	urembed  -c ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c -H ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h -s ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs -w ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur  ./lib/uru3/JQuery/jquery-1.9.1.js > ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch
+.INTERMEDIATE: ./.fix-multy11
+./.fix-multy11: ./Makefile ./src/Compet.css
+	urembed  -c ./autogen/Compet_css_c.c -H ./autogen/Compet_css_c.h -s ./autogen/Compet_css_c.urs -w ./autogen/Compet_css.ur  ./src/Compet.css > ./.cake3/tmp___src_Compet_css_patch
+.INTERMEDIATE: ./.fix-multy12
+./.fix-multy12: ./Makefile ./Compet.urp $(call GUARD,URVERSION)
 	urweb -dbms postgres ./Compet
-autogen/Compet_css_c.o: ./Makefile autogen/Compet_css_c.c $(call GUARD,URCC) $(call GUARD,URINCL) $(call GUARD,UR_CFLAGS)
-	$(URCC) -c $(URINCL) $(UR_CFLAGS)  -o autogen/Compet_css_c.o autogen/Compet_css_c.c
-$(call GUARD,URCC):
-	rm -f .cake3/GUARD_URCC_*
-	touch $@
-$(call GUARD,URINCL):
-	rm -f .cake3/GUARD_URINCL_*
-	touch $@
+.INTERMEDIATE: ./.fix-multy2
+./.fix-multy2: ./Makefile ./lib/uru3/Bootstrap/Tooltip.js
+	urembed  -c ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c -H ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h -s ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs -w ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur -j ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs ./lib/uru3/Bootstrap/Tooltip.js > ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch
+.INTERMEDIATE: ./.fix-multy3
+./.fix-multy3: ./Makefile ./lib/uru3/Bootstrap/dist/css/bootstrap.css
+	urembed --css-mangle-urls -c ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c -H ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h -s ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs -w ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur  ./lib/uru3/Bootstrap/dist/css/bootstrap.css > ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch
+.INTERMEDIATE: ./.fix-multy4
+./.fix-multy4: ./Makefile ./lib/uru3/Bootstrap/dist/css/bootstrap-theme.css
+	urembed  -c ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c -H ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h -s ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs -w ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur  ./lib/uru3/Bootstrap/dist/css/bootstrap-theme.css > ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch
+.INTERMEDIATE: ./.fix-multy5
+./.fix-multy5: ./Makefile ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.eot
+	urembed  -c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c -H ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h -s ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs -w ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur  ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.eot > ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch
+.INTERMEDIATE: ./.fix-multy6
+./.fix-multy6: ./Makefile ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.svg
+	urembed  -c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c -H ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h -s ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs -w ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur  ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.svg > ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch
+.INTERMEDIATE: ./.fix-multy7
+./.fix-multy7: ./Makefile ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.ttf
+	urembed  -c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c -H ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h -s ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs -w ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur  ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.ttf > ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch
+.INTERMEDIATE: ./.fix-multy8
+./.fix-multy8: ./Makefile ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.woff
+	urembed  -c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c -H ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h -s ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs -w ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur  ./lib/uru3/Bootstrap/dist/fonts/glyphicons-halflings-regular.woff > ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch
+.INTERMEDIATE: ./.fix-multy9
+./.fix-multy9: ./Makefile ./lib/uru3/Bootstrap/dist/js/bootstrap.min.js
+	urembed  -c ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c -H ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h -s ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs -w ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur  ./lib/uru3/Bootstrap/dist/js/bootstrap.min.js > ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch
+./Compet.exe: ./.fix-multy12
+./Compet.sql: ./.fix-multy12
+./Compet.urp: ./Makefile ./.cake3/tmp___Compet_in_1 ./.cake3/tmp___Compet_in_2 ./.cake3/tmp___src_Compet_css_patch ./autogen/Compet_css.ur ./autogen/Compet_css_c.c ./autogen/Compet_css_c.h ./autogen/Compet_css_c.urs
+	cat ./.cake3/tmp___Compet_in_1 > ./Compet.urp
+	cat ./.cake3/tmp___src_Compet_css_patch >> ./Compet.urp
+	cat ./.cake3/tmp___Compet_in_2 >> ./Compet.urp
+./autogen/Compet_css.ur: ./.fix-multy11
+./autogen/Compet_css_c.c: ./.fix-multy11
+./autogen/Compet_css_c.h: ./.fix-multy11
+./autogen/Compet_css_c.o: ./Makefile ./.cake3/tmp___src_Compet_css_patch ./autogen/Compet_css.ur ./autogen/Compet_css_c.c ./autogen/Compet_css_c.h ./autogen/Compet_css_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./autogen/Compet_css_c.o ./autogen/Compet_css_c.c
+./autogen/Compet_css_c.urs: ./.fix-multy11
+./lib/uru3/Bootstrap/autogen/FormSignin_css.ur: ./.fix-multy1
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c: ./.fix-multy1
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h: ./.fix-multy1
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs: ./.fix-multy1
+./lib/uru3/Bootstrap/autogen/Tooltip_js.ur: ./.fix-multy2
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c: ./.fix-multy2
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h: ./.fix-multy2
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs: ./.fix-multy2
+./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs: ./.fix-multy2
+./lib/uru3/Bootstrap/autogen/bootstrap_css.ur: ./.fix-multy3
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c: ./.fix-multy3
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h: ./.fix-multy3
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs: ./.fix-multy3
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur: ./.fix-multy9
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c: ./.fix-multy9
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h: ./.fix-multy9
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs: ./.fix-multy9
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur: ./.fix-multy4
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c: ./.fix-multy4
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h: ./.fix-multy4
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs: ./.fix-multy4
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur: ./.fix-multy5
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c: ./.fix-multy5
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h: ./.fix-multy5
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs: ./.fix-multy5
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur: ./.fix-multy6
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c: ./.fix-multy6
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h: ./.fix-multy6
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs: ./.fix-multy6
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur: ./.fix-multy7
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c: ./.fix-multy7
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h: ./.fix-multy7
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs: ./.fix-multy7
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur: ./.fix-multy8
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c: ./.fix-multy8
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h: ./.fix-multy8
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs: ./.fix-multy8
+./lib/uru3/Bootstrap/lib.urp: ./Makefile ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1 ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2 ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs
+	cat ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1 > ./lib/uru3/Bootstrap/lib.urp
+	cat ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch >> ./lib/uru3/Bootstrap/lib.urp
+	cat ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2 >> ./lib/uru3/Bootstrap/lib.urp
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur: ./.fix-multy10
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c: ./.fix-multy10
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h: ./.fix-multy10
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o: ./Makefile ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs $(call GUARD,UR_CC) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) -o ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs: ./.fix-multy10
+./lib/uru3/JQuery/lib.urp: ./Makefile ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch ./.cake3/tmp___lib_uru3_JQuery_lib_in_1 ./.cake3/tmp___lib_uru3_JQuery_lib_in_2 ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs
+	cat ./.cake3/tmp___lib_uru3_JQuery_lib_in_1 > ./lib/uru3/JQuery/lib.urp
+	cat ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch >> ./lib/uru3/JQuery/lib.urp
+	cat ./.cake3/tmp___lib_uru3_JQuery_lib_in_2 >> ./lib/uru3/JQuery/lib.urp
+./lib/uru3/Uru/Script.o: ./Makefile ./lib/uru3/Uru/Script.c $(call GUARD,UR_CC) $(call GUARD,UR_CFLAGS) $(call GUARD,UR_INCL)
+	$(UR_CC) -c $(UR_INCL) $(UR_CFLAGS)  -o ./lib/uru3/Uru/Script.o ./lib/uru3/Uru/Script.c
+./lib/uru3/Uru/lib.urp: ./Makefile ./.cake3/tmp___lib_uru3_Uru_lib_in_1 ./.cake3/tmp___lib_uru3_Uru_lib_in_2
+	cat ./.cake3/tmp___lib_uru3_Uru_lib_in_1 > ./lib/uru3/Uru/lib.urp
+	cat ./.cake3/tmp___lib_uru3_Uru_lib_in_2 >> ./lib/uru3/Uru/lib.urp
+./lib/urweb-monad-pack/lib.urp: ./Makefile ./.cake3/tmp___lib_urweb_monad_pack_lib_in_1 ./.cake3/tmp___lib_urweb_monad_pack_lib_in_2
+	cat ./.cake3/tmp___lib_urweb_monad_pack_lib_in_1 > ./lib/urweb-monad-pack/lib.urp
+	cat ./.cake3/tmp___lib_urweb_monad_pack_lib_in_2 >> ./lib/urweb-monad-pack/lib.urp
+./lib/urweb-prelude/lib.urp: ./Makefile ./.cake3/tmp___lib_urweb_prelude_lib_in_1 ./.cake3/tmp___lib_urweb_prelude_lib_in_2
+	cat ./.cake3/tmp___lib_urweb_prelude_lib_in_1 > ./lib/urweb-prelude/lib.urp
+	cat ./.cake3/tmp___lib_urweb_prelude_lib_in_2 >> ./lib/urweb-prelude/lib.urp
 $(call GUARD,URVERSION):
 	rm -f .cake3/GUARD_URVERSION_*
 	touch $@
+$(call GUARD,UR_CC):
+	rm -f .cake3/GUARD_UR_CC_*
+	touch $@
 $(call GUARD,UR_CFLAGS):
 	rm -f .cake3/GUARD_UR_CFLAGS_*
+	touch $@
+$(call GUARD,UR_INCL):
+	rm -f .cake3/GUARD_UR_INCL_*
 	touch $@
 
 else
@@ -93,39 +312,199 @@ else
 
 ifneq ($(MAKECMDGOALS),clean)
 
-.PHONY: all
-all: .fix-multy1
-.PHONY: tc
-tc: .fix-multy1
-.PHONY: dropdb
-dropdb: .fix-multy1
+.PHONY: ./all
+./all: ./.fix-multy1
+.PHONY: ./.cake3/tmp___Compet_in_2
+./.cake3/tmp___Compet_in_2: ./.fix-multy1
+.PHONY: ./.cake3/tmp___Compet_in_1
+./.cake3/tmp___Compet_in_1: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_urweb_monad_pack_lib_in_2
+./.cake3/tmp___lib_urweb_monad_pack_lib_in_2: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_urweb_monad_pack_lib_in_1
+./.cake3/tmp___lib_urweb_monad_pack_lib_in_1: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2
+./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1
+./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Uru_lib_in_2
+./.cake3/tmp___lib_uru3_Uru_lib_in_2: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Uru_lib_in_1
+./.cake3/tmp___lib_uru3_Uru_lib_in_1: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_JQuery_lib_in_2
+./.cake3/tmp___lib_uru3_JQuery_lib_in_2: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_JQuery_lib_in_1
+./.cake3/tmp___lib_uru3_JQuery_lib_in_1: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_urweb_prelude_lib_in_2
+./.cake3/tmp___lib_urweb_prelude_lib_in_2: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_urweb_prelude_lib_in_1
+./.cake3/tmp___lib_urweb_prelude_lib_in_1: ./.fix-multy1
+.PHONY: ./tc
+./tc: ./.fix-multy1
+.PHONY: ./dropdb
+./dropdb: ./.fix-multy1
 .PHONY: ./Compet.db
-./Compet.db: .fix-multy1
-.PHONY: ./Compet.exe
-./Compet.exe: .fix-multy1
-.PHONY: ./Compet.urp
-./Compet.urp: .fix-multy1
-.PHONY: .cake3/tmp__Compet_in
-.cake3/tmp__Compet_in: .fix-multy1
-.PHONY: ./lib/urweb-prelude/lib.urp
-./lib/urweb-prelude/lib.urp: .fix-multy1
-.PHONY: .cake3/tmp__liburweb-preludelib_in
-.cake3/tmp__liburweb-preludelib_in: .fix-multy1
-.PHONY: ./Compet.sql
-./Compet.sql: .fix-multy1
-.INTERMEDIATE: .fix-multy1
-.fix-multy1: 
+./Compet.db: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch
+./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch
+./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch
+./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch
+./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch: ./.fix-multy1
+.PHONY: ./.cake3/tmp___src_Compet_css_patch
+./.cake3/tmp___src_Compet_css_patch: ./.fix-multy1
+.INTERMEDIATE: ./.fix-multy1
+./.fix-multy1:
 	-mkdir .cake3
-	$(MAKE) -C ./lib/uru3/Bootstrap -f Makefile lib
-	$(MAKE) -C ./lib/urweb-monad-pack -f Makefile lib
 	MAIN=1 $(MAKE) -f ./Makefile $(MAKECMDGOALS)
-.PHONY: autogen/Compet_css_c.o
-autogen/Compet_css_c.o: .fix-multy1
+.PHONY: ./Compet.exe
+./Compet.exe: ./.fix-multy1
+.PHONY: ./Compet.sql
+./Compet.sql: ./.fix-multy1
+.PHONY: ./Compet.urp
+./Compet.urp: ./.fix-multy1
+.PHONY: ./autogen/Compet_css.ur
+./autogen/Compet_css.ur: ./.fix-multy1
+.PHONY: ./autogen/Compet_css_c.c
+./autogen/Compet_css_c.c: ./.fix-multy1
+.PHONY: ./autogen/Compet_css_c.h
+./autogen/Compet_css_c.h: ./.fix-multy1
+.PHONY: ./autogen/Compet_css_c.o
+./autogen/Compet_css_c.o: ./.fix-multy1
+.PHONY: ./autogen/Compet_css_c.urs
+./autogen/Compet_css_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur
+./lib/uru3/Bootstrap/autogen/FormSignin_css.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs
+./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur
+./lib/uru3/Bootstrap/autogen/Tooltip_js.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs
+./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs
+./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur
+./lib/uru3/Bootstrap/autogen/bootstrap_css.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs
+./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs
+./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs
+./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs
+./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/Bootstrap/lib.urp
+./lib/uru3/Bootstrap/lib.urp: ./.fix-multy1
+.PHONY: ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur: ./.fix-multy1
+.PHONY: ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c: ./.fix-multy1
+.PHONY: ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h: ./.fix-multy1
+.PHONY: ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o: ./.fix-multy1
+.PHONY: ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs
+./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs: ./.fix-multy1
+.PHONY: ./lib/uru3/JQuery/lib.urp
+./lib/uru3/JQuery/lib.urp: ./.fix-multy1
+.PHONY: ./lib/uru3/Uru/Script.o
+./lib/uru3/Uru/Script.o: ./.fix-multy1
+.PHONY: ./lib/uru3/Uru/lib.urp
+./lib/uru3/Uru/lib.urp: ./.fix-multy1
+.PHONY: ./lib/urweb-monad-pack/lib.urp
+./lib/urweb-monad-pack/lib.urp: ./.fix-multy1
+.PHONY: ./lib/urweb-prelude/lib.urp
+./lib/urweb-prelude/lib.urp: ./.fix-multy1
 
 endif
-.PHONY: clean
-clean: 
-	-rm ./Compet.db ./Compet.exe ./Compet.sql ./Compet.urp ./lib/urweb-prelude/lib.urp .cake3/tmp__Compet_in .cake3/tmp__liburweb-preludelib_in autogen/Compet_css_c.o
+.PHONY: ./clean
+./clean:
+	-rm ./.cake3/tmp___Compet_in_1 ./.cake3/tmp___Compet_in_2 ./.cake3/tmp___lib_uru3_Bootstrap_FormSignin_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_Tooltip_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_css_bootstrap_theme_css_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_eot_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_svg_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_ttf_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_fonts_glyphicons_halflings_regular_woff_patch ./.cake3/tmp___lib_uru3_Bootstrap_dist_js_bootstrap_min_js_patch ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_1 ./.cake3/tmp___lib_uru3_Bootstrap_lib_in_2 ./.cake3/tmp___lib_uru3_JQuery_jquery_1_9_1_js_patch ./.cake3/tmp___lib_uru3_JQuery_lib_in_1 ./.cake3/tmp___lib_uru3_JQuery_lib_in_2 ./.cake3/tmp___lib_uru3_Uru_lib_in_1 ./.cake3/tmp___lib_uru3_Uru_lib_in_2 ./.cake3/tmp___lib_urweb_monad_pack_lib_in_1 ./.cake3/tmp___lib_urweb_monad_pack_lib_in_2 ./.cake3/tmp___lib_urweb_prelude_lib_in_1 ./.cake3/tmp___lib_urweb_prelude_lib_in_2 ./.cake3/tmp___src_Compet_css_patch ./Compet.db ./Compet.exe ./Compet.sql ./Compet.urp ./autogen/Compet_css.ur ./autogen/Compet_css_c.c ./autogen/Compet_css_c.h ./autogen/Compet_css_c.o ./autogen/Compet_css_c.urs ./lib/uru3/Bootstrap/autogen/FormSignin_css.ur ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.c ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.h ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.o ./lib/uru3/Bootstrap/autogen/FormSignin_css_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js.ur ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.c ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.h ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.o ./lib/uru3/Bootstrap/autogen/Tooltip_js_c.urs ./lib/uru3/Bootstrap/autogen/Tooltip_js_js.urs ./lib/uru3/Bootstrap/autogen/bootstrap_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_css_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_min_js.ur ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_min_js_c.urs ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css.ur ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.c ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.h ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.o ./lib/uru3/Bootstrap/autogen/bootstrap_theme_css_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_eot_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_svg_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_ttf_c.urs ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff.ur ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.c ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.h ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.o ./lib/uru3/Bootstrap/autogen/glyphicons_halflings_regular_woff_c.urs ./lib/uru3/Bootstrap/lib.urp ./lib/uru3/JQuery/autogen/jquery_1_9_1_js.ur ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.c ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.h ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.o ./lib/uru3/JQuery/autogen/jquery_1_9_1_js_c.urs ./lib/uru3/JQuery/lib.urp ./lib/uru3/Uru/Script.o ./lib/uru3/Uru/lib.urp ./lib/urweb-monad-pack/lib.urp ./lib/urweb-prelude/lib.urp
 	-rm -rf .cake3
 
 endif
