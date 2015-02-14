@@ -37,7 +37,7 @@ app = do
     ur (file "src/DragTable.ur")
     ur (file "src/Compet.ur", file "src/Compet.urs")
 
-main = writeMake (file "Makefile") $ do
+main = writeDefaultMakefiles $ do
 
   a <- app
 
